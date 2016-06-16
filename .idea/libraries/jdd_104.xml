@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="jdd_104">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/jdd_104.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jdd_104.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
