@@ -9,12 +9,18 @@ import java.util.List;
  */
 public class FaultTree {
     private final @NotNull List<FaultTreeNode> nodes;
+    private final @NotNull List<MCState> chain;
 
-    public FaultTree(List<FaultTreeNode> nodes) {
+    public FaultTree(List<FaultTreeNode> nodes, List<MCState> chain) {
         this.nodes = nodes;
+        this.chain = chain;
     }
 
     public List<FaultTreeNode> getNodes() {
         return nodes;
+    }
+
+    public List<MCState> getChain() {
+        return chain;
     }
 }
