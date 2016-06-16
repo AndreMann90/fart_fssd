@@ -1,7 +1,6 @@
 package de.fssd.dataobjects;
 
 import com.sun.istack.internal.NotNull;
-import com.sun.org.apache.xpath.internal.operations.String;
 
 import java.util.List;
 

@@ -1,7 +1,5 @@
 package de.fssd.dataobjects;
 
-import com.sun.org.apache.xpath.internal.operations.String;
-
 /**
  * Created by Andre on 16.06.2016.
  */
