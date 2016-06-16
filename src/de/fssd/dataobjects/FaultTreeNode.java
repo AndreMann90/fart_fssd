@@ -14,10 +14,12 @@ import java.util.Map;
 public class FaultTreeNode {
     private @NotNull final String id;
     private @NotNull final String op;
+
     private @Nullable List<String> out;
 
-    private @Nullable List<FaultTreeNode> outputs = null; // null means not computed yet
-    private @Nullable List<FaultTreeNode> inputs = new LinkedList<>();
+    /* These are initialized lazily */
+    private @Nullable List<FaultTreeNode> outputs = null;
+    private @Nullable List<FaultTreeNode> inputs = null;
 
     public FaultTreeNode(String id, List<String> out, String op) {
         this.id = id;
@@ -25,28 +27,22 @@ public class FaultTreeNode {
         this.op = op;
     }
 
-    void computeDependency(Map<String, FaultTreeNode> map) {
-        if (outputs == null) {
-            outputs = new ArrayList<>(out.size());
-            for (String outID : out) {
-                FaultTreeNode outNode = map.get(outID);
-                outputs.add(outNode);
-                outNode.inputs.add(this);
-            }
-            out = null; // No longer needed
-        }
-    }
+    public List<String> getOut() { return out; }
 
     public @NotNull String getId() {
         return id;
     }
 
     public @Nullable List<FaultTreeNode> getOutputs() {
+        if (outputs == null)
+            outputs = new ArrayList<>();
         return outputs;
     }
 
     public @Nullable List<FaultTreeNode> getInputs() {
-        return outputs == null ? null : inputs;
+        if (inputs == null)
+            inputs = new ArrayList<>();
+        return inputs;
     }
 
     public @NotNull String getOp() {

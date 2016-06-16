@@ -4,9 +4,6 @@ import com.sun.istack.internal.NotNull;
 
 import java.util.List;
 
-/**
- * Created by Andre on 16.06.2016.
- */
 public class MCState {
     private final @NotNull String id;
     private final float p0;
@@ -28,7 +25,27 @@ public class MCState {
         return out;
     }
 
+    public float getP0() {
+        return p0;
+    }
+
     public List<MCTransition> getTransitions() {
         return transitions;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MCState mcState = (MCState) o;
+
+        return getId().equals(mcState.getId());
+
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
     }
 }
