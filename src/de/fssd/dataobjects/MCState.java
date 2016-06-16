@@ -10,11 +10,13 @@ import java.util.List;
  */
 public class MCState {
     private final @NotNull String id;
+    private final float p0;
     private final @NotNull List<String> out;
     private final @NotNull List<MCTransition> transitions;
 
-    public MCState(String id, List<String> out, List<MCTransition> transitions) {
+    public MCState(String id, float p0, List<String> out, List<MCTransition> transitions) {
         this.id = id;
+        this.p0 = p0;
         this.out = out;
         this.transitions = transitions;
     }

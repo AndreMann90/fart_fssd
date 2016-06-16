@@ -1,3 +1,4 @@
+import de.fssd.dataobjects.FaultTree;
 import de.fssd.parser.Parser;
 
 import java.io.File;
@@ -12,7 +13,7 @@ public class ParserTest {
     public void parse() throws Exception {
         Parser parser = new Parser();
 
-        //TODO parser.parse(new File())
+        FaultTree faultTree = parser.parse(new File("testcases/test1.json"));
     }
 
 }
