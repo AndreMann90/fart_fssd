@@ -8,9 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Andre on 16.06.2016.
- */
 public class FaultTreeNode {
     private @NotNull final String id;
     private @NotNull final String op;

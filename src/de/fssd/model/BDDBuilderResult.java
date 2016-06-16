@@ -6,7 +6,7 @@ public class BDDBuilderResult {
     public Integer top;
     public BDD bdd;
 
-    public BDDBuilderResult(Integer top, BDD bdd) {
+    BDDBuilderResult(Integer top, BDD bdd) {
         this.top = top;
         this.bdd = bdd;
     }

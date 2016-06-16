@@ -4,14 +4,10 @@ import de.fssd.dataobjects.FaultTree;
 import de.fssd.model.BDDBuilderResult;
 import de.fssd.parser.Parser;
 import de.fssd.model.BDDBuilder;
-import jdd.bdd.BDD;
 import jdd.util.Dot;
 
 import java.io.File;
 
-/**
- * Created by Andre on 16.06.2016.
- */
 public class Test {
     @org.junit.Test
     public void parse() throws Exception {
