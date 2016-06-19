@@ -1,5 +1,6 @@
 package de.fssd.evaluation;
 
+import de.fssd.model.BDDNode;
 import de.fssd.model.Markov;
 import jdd.bdd.BDD;
 
@@ -10,7 +11,7 @@ import java.util.stream.Stream;
  */
 public class Evaluation {
 
-    public Evaluation (BDD bdd, int rootNote, Markov markov) {
+    public Evaluation (BDDNode rootNode, Markov markov) {
 
     }
 

@@ -1,19 +1,18 @@
 package de.fssd.model;
 
+
 import de.fssd.dataobjects.FaultTree;
 import de.fssd.dataobjects.FaultTreeNode;
 import de.fssd.dataobjects.MCState;
 import de.fssd.parser.ParseException;
-import de.fssd.parser.Parser;
+import javafx.util.Pair;
 import jdd.bdd.BDD;
-import jdd.util.Dot;
 
-import java.io.File;
 import java.util.*;
 
 public class BDDBuilder {
-    private Integer
-    multiOp(BDD bdd, Vector<Integer> inputs, String op) {
+
+    private Integer multiOp(BDD bdd, Vector<Integer> inputs, String op) {
         Integer prev = inputs.get(0);
 
         for (int idx = 1; idx < inputs.size(); idx++) {
@@ -22,11 +21,11 @@ public class BDDBuilder {
                 case ">=1":
                     c = bdd.ref(bdd.or(prev, inputs.get(idx)));
                     break;
-                default:
-                    /* Raise an exception? */
                 case "&":
                     c = bdd.ref(bdd.and(prev, inputs.get(idx)));
                     break;
+                default:
+                    throw new ParseException("The operation " + op + " is not supported");
             }
             bdd.deref(prev);
             prev = c;
@@ -61,7 +60,12 @@ public class BDDBuilder {
         }
     }
 
-    public BDDBuilderResult build(FaultTree t) throws Exception {
+    /**
+     * Builds the BDD from the fault tree and returns the root node and the Markov
+     * @param t the fault tree
+     * @return the root node and Markov States
+     */
+    public Pair<BDDNode, Markov> build(FaultTree t) {
         /* Return bdd, top node, markov states */
         updateDependencies(t);
 
@@ -109,6 +113,6 @@ public class BDDBuilder {
             }
         }
 
-        return new BDDBuilderResult(top, bdd);
+        return new Pair<>(new BDDNode(bdd, top), new Markov(bddvars));
     }
 }
