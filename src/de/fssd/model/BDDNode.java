@@ -2,6 +2,9 @@ package de.fssd.model;
 
 import jdd.bdd.BDD;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by Andre on 19.06.2016.
  */
@@ -11,7 +14,7 @@ public class BDDNode {
     private final int varID;
     private final BDDNode highChild;
     private final BDDNode lowChild;
-    private BDDNode parent;
+    private List<BDDNode> parent;
 
     /**
      * Use to wrap a {@link BDD} for a more programmer friendly NAVIGATION through the bdd AFTER having build it.
@@ -27,13 +30,13 @@ public class BDDNode {
         this.nodeID = nodeID;
         this.varID = bdd.getVar(nodeID);
 
-        this.parent = null; // will be set be parent
+        this.parent = new LinkedList<>();
 
         if(hasChild()) {
             highChild = new BDDNode(bdd, bdd.getHigh(nodeID));
-            highChild.parent = this;
+            highChild.parent.add(this);
             lowChild = new BDDNode(bdd, bdd.getLow(nodeID));
-            lowChild.parent = this;
+            lowChild.parent.add(this);
         } else {
             highChild = null;
             lowChild = null;
@@ -56,7 +59,7 @@ public class BDDNode {
         return lowChild;
     }
 
-    public BDDNode getParent() {
+    public List<BDDNode> getParents() {
         return parent;
     }
 

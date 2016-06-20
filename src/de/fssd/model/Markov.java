@@ -14,6 +14,19 @@ public class Markov {
         //TODO
     }
 
+    /**
+     * Returns the number of timestamps in the series
+     * @return number of timestamps
+     */
+    public int getTimeseriesCount() {
+        return 0; //TODO
+    }
+
+    /**
+     * Returns the timeseries for a given variable id
+     * @param varID variable id
+     * @return timeseries
+     */
     public Stream<Float> getProbabilitySeries(int varID) {
         return null; //TODO
     }
