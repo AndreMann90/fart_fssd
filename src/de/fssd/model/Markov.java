@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 /**
  * Created by Andre on 16.06.2016.
  */
-public class Markov {
+public class Markov implements TimeSeries {
 
     public Markov(Map<Integer, MCState> varIDToStateMap) {
         //TODO

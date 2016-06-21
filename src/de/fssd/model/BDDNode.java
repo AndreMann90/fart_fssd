@@ -1,5 +1,6 @@
 package de.fssd.model;
 
+import com.sun.istack.internal.NotNull;
 import jdd.bdd.BDD;
 
 import java.util.LinkedList;
@@ -14,7 +15,7 @@ public class BDDNode {
     private final int varID;
     private final BDDNode highChild;
     private final BDDNode lowChild;
-    private List<BDDNode> parent;
+    private @NotNull List<BDDNode> parent;
 
     /**
      * Use to wrap a {@link BDD} for a more programmer friendly NAVIGATION through the bdd AFTER having build it.
@@ -64,7 +65,7 @@ public class BDDNode {
     }
 
     public boolean isRoot() {
-        return parent == null;
+        return parent.isEmpty();
     }
 
     public boolean isOne() {
@@ -95,6 +96,20 @@ public class BDDNode {
                         ||
                         (this.lowChild.equals(bddNode.lowChild) && this.highChild.equals(bddNode.highChild))
                 );
+    }
+
+    /**
+     * Subtree of node for debugging
+     * @return subtree
+     */
+    public String getTreeString() {
+        if(isOne()) {
+            return "1";
+        } else if (isZero()) {
+            return "0";
+        } else {
+            return "v" + getVarID() + "(" + getNodeID() + "): [" + getLowChild().getTreeString() + ", " +getHighChild().getTreeString() + "]";
+        }
     }
 
     @Override

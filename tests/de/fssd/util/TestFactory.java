@@ -1,9 +1,10 @@
-package tests;
+package de.fssd.util;
 
 import de.fssd.dataobjects.MCState;
 import de.fssd.dataobjects.MCTransition;
 import de.fssd.model.BDDNode;
 import de.fssd.model.Markov;
+import de.fssd.model.TimeSeries;
 import javafx.util.Pair;
 import jdd.bdd.BDD;
 
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Created by Andre on 21.06.2016.
@@ -21,7 +23,7 @@ public class TestFactory {
      * Builds the BDD and Markov that corresponds to the Faulttree for the RAID in the Programming Project Intro Slides
      * @return the bdd
      */
-    public static Pair<BDDNode, Markov> getRAIDTest() {
+    public static Pair<BDDNode, TimeSeries> getRAIDTest() {
         BDD bdd = new BDD(20);
 
         int a = bdd.ref(bdd.createVar()); // dsc 1
@@ -32,12 +34,30 @@ public class TestFactory {
         int top = bdd.ref(bdd.or(ab, c));
         bdd.deref(ab);
 
-        Map<Integer, MCState> varIDToStateMap = new HashMap<>();
-        varIDToStateMap.put(bdd.getVar(a), new MCState("a", 0.2f, Collections.emptyList(), Collections.emptyList()));
-        varIDToStateMap.put(bdd.getVar(b), new MCState("b", 0.2f, Collections.emptyList(), Collections.emptyList()));
-        varIDToStateMap.put(bdd.getVar(c), new MCState("c", 0.1f, Collections.emptyList(), Collections.emptyList()));
+        final int aVar = bdd.getVar(a);
+        final int bVar = bdd.getVar(b);
+        final int cVar = bdd.getVar(c);
+        TimeSeries timeSeries = new TimeSeries() {
+            @Override
+            public int getTimeseriesCount() {
+                return 3;
+            }
 
-        return new Pair<>(new BDDNode(bdd, top), new Markov(varIDToStateMap));
+            @Override
+            public Stream<Float> getProbabilitySeries(int varID) {
+                if (varID == aVar) {
+                    return Arrays.asList(0f, 0.2f, 1f).stream();
+                } else if (varID == bVar) {
+                    return Arrays.asList(0f, 0.2f, 1f).stream();
+                } else if (varID == cVar) {
+                    return Arrays.asList(0f, 0.1f, 1f).stream();
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        return new Pair<>(new BDDNode(bdd, top), timeSeries);
     }
 
     /**

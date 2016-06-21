@@ -2,7 +2,10 @@ package de.fssd.model;
 
 import org.junit.Before;
 import org.junit.Test;
-import tests.TestFactory;
+import de.fssd.util.TestFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -16,36 +19,34 @@ public class BDDNodeTest {
     @Before
     public void setup() {
         rootNode = TestFactory.getRAIDTest().getKey();
+        System.out.println(rootNode.getTreeString());
     }
 
     @Test
-    public void getHighChild() throws Exception {
-
+    public void navigation() throws Exception {
+        assertEquals(rootNode.getNodeID(), rootNode.getLowChild().getParents().get(0).getNodeID());
+        assertTrue(rootNode.getParents().isEmpty());
+        assertTrue(rootNode.getHighChild().getHighChild().getLowChild() == null);
     }
 
     @Test
-    public void getLowChild() throws Exception {
+    public void childAndRootChecks() throws Exception {
+        assertTrue(rootNode.isRoot());
+        assertFalse(rootNode.isOne());
+        assertFalse(rootNode.isZero());
 
-    }
+        BDDNode low = rootNode.getLowChild();
+        assertFalse(low.isRoot());
+        assertFalse(low.isOne());
+        assertFalse(low.isZero());
 
-    @Test
-    public void getParents() throws Exception {
+        assertTrue(low.getLowChild().isZero());
+        assertFalse(low.getLowChild().isOne());
+        assertFalse(low.getLowChild().isRoot());
 
-    }
-
-    @Test
-    public void isRoot() throws Exception {
-
-    }
-
-    @Test
-    public void isOne() throws Exception {
-
-    }
-
-    @Test
-    public void isZero() throws Exception {
-
+        assertTrue(low.getHighChild().isOne());
+        assertFalse(low.getHighChild().isZero());
+        assertFalse(low.getHighChild().isRoot());
     }
 
 }

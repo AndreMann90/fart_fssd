@@ -1,12 +1,10 @@
-package tests;
+package de.fssd.model;
 
 import de.fssd.dataobjects.FaultTree;
-import de.fssd.model.BDDNode;
-import de.fssd.model.Markov;
 import de.fssd.parser.Parser;
-import de.fssd.model.BDDBuilder;
 import javafx.util.Pair;
 import jdd.util.Dot;
+import de.fssd.util.TestFactory;
 
 import java.io.File;
 
