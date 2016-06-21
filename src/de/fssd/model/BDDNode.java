@@ -78,4 +78,35 @@ public class BDDNode {
     public boolean hasChild() {
         return !isOne() && !isZero();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BDDNode)) return false;
+
+        BDDNode bddNode = (BDDNode) o;
+
+        return getVarID() == bddNode.getVarID()
+                &&
+                (
+                        (isOne() && bddNode.isOne())
+                        ||
+                        (isZero() && bddNode.isZero())
+                        ||
+                        (this.lowChild.equals(bddNode.lowChild) && this.highChild.equals(bddNode.highChild))
+                );
+    }
+
+    @Override
+    public int hashCode() {
+        return getNodeID();
+    }
+
+    @Override
+    public String toString() {
+        return "BDDNode{" +
+                "varID=" + varID +
+                ", nodeID=" + nodeID +
+                '}';
+    }
 }

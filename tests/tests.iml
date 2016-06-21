@@ -18,5 +18,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="fart_fssd" />
+    <orderEntry type="library" name="jdd_104" level="project" />
   </component>
 </module>

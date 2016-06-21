@@ -71,13 +71,15 @@ public class BDDBuilder {
 
         BDD bdd = new BDD(1000);
 
-        Map<MCState, Integer> bddvars = new HashMap<>();
+        Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
+        Map<Integer, MCState> varIDToStateMap = new HashMap<>();
         for (MCState s: t.getChain()) {
             int var = bdd.ref(bdd.createVar());
-            bddvars.put(s, var);
+            stateToNodeIDMap.put(s, var);
+            varIDToStateMap.put(bdd.getVar(var), s);
             System.out.println("Creating variable " + s.getId());
         }
-        System.out.println("Done creating " + bddvars.size() + " vars");
+        System.out.println("Done creating " + stateToNodeIDMap.size() + " vars");
 
         Map<FaultTreeNode, Integer> bddnodes = new HashMap<>();
 
@@ -100,7 +102,7 @@ public class BDDBuilder {
                 }
                 for (MCState s : t.getChain()) {
                     if (s.getOut().contains(n.getId()))
-                        inputs.add(bddvars.get(s));
+                        inputs.add(stateToNodeIDMap.get(s));
                 }
 
                 if (usable) {
@@ -113,6 +115,6 @@ public class BDDBuilder {
             }
         }
 
-        return new Pair<>(new BDDNode(bdd, top), new Markov(bddvars));
+        return new Pair<>(new BDDNode(bdd, top), new Markov(varIDToStateMap));
     }
 }

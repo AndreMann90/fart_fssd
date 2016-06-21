@@ -1,5 +1,6 @@
 package de.fssd.evaluation;
 
+import com.codepoetics.protonpack.StreamUtils;
 import com.codepoetics.protonpack.functions.TriFunction;
 import com.sun.istack.internal.Nullable;
 import de.fssd.model.BDDNode;
@@ -7,9 +8,8 @@ import de.fssd.model.Markov;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BinaryOperator;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +37,7 @@ public class Evaluation {
         if(result != null) {
             return result.collect(Collectors.toList());
         } else {
-            return new LinkedList<>();
+            return Collections.nCopies(markov.getTimeseriesCount(), 0f);
         }
     }
 
@@ -64,11 +64,11 @@ public class Evaluation {
                 final Stream<Float> result;
 
                 if(high == null) {
-                    result = zip(current, low, (a, b) -> (1-a) * b);
+                    result = zip(current, low, (c, l) -> (1-l) * c);
                 } else if(low == null) {
-                    result = zip(current, high, (a, b) -> a * b);
+                    result = zip(current, high, (c, h) -> c + h);
                 } else {
-                    result = zip(current, low, high, (a, b, c) -> (1-a)*b + a*c);
+                    result = zip(current, low, high, (c, l, h) -> (1-c) * l + c * h);
                 }
 
                 return result;
@@ -81,7 +81,7 @@ public class Evaluation {
         if(!oneNode.isOne()) {
             throw new AssertionError("Not one node");
         } else if(oneNode.isRoot()) {
-            return Collections.nCopies(markov.getTimeseriesCount(), 1f);
+            return Collections.nCopies(markov.getTimeseriesCount(), 0f);
         } else {
             return constructFormulaBottomUp(oneNode).collect(Collectors.toList());
         }
@@ -117,20 +117,11 @@ public class Evaluation {
     }
 
 
-    private Stream<Float> zip(Stream<Float> aStream, Stream<Float> bStream, BinaryOperator<Float> op) {
-        /* USE: https://github.com/poetix/protonpack for zipping
-         Streams are provided by Class Markov
-        StreamUtils.zip(streamA,
-                streamB,
-                (a, b) -> a + b);*/
-        return Stream.generate(ones); //TODO
+    private Stream<Float> zip(Stream<Float> aStream, Stream<Float> bStream, BiFunction<Float, Float, Float> op) {
+        return StreamUtils.zip(aStream, bStream, op);
     }
+
     private Stream<Float> zip(Stream<Float> aStream, Stream<Float> bStream, Stream<Float> cStream, TriFunction<Float, Float, Float, Float> op) {
-        /* USE: https://github.com/poetix/protonpack for zipping
-         Streams are provided by Class Markov
-        StreamUtils.zip(streamA,
-                streamB,
-                (a, b) -> a + b);*/
-        return Stream.generate(ones); //TODO
+        return StreamUtils.zip(aStream, bStream, cStream, op);
     }
 }

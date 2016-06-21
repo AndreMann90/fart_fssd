@@ -10,7 +10,7 @@ import java.util.stream.Stream;
  */
 public class Markov {
 
-    public Markov(Map<MCState, Integer> mcStateIntegerMap) {
+    public Markov(Map<Integer, MCState> varIDToStateMap) {
         //TODO
     }
 
