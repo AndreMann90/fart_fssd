@@ -1,17 +1,12 @@
 package de.fssd.util;
 
-import de.fssd.dataobjects.MCState;
-import de.fssd.dataobjects.MCTransition;
 import de.fssd.model.BDDNode;
-import de.fssd.model.Markov;
 import de.fssd.model.TimeSeries;
 import javafx.util.Pair;
 import jdd.bdd.BDD;
 
+import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -26,7 +21,7 @@ public class TestFactory {
     public static Pair<BDDNode, TimeSeries> getRAIDTest() {
         BDD bdd = new BDD(20);
 
-        int a = bdd.ref(bdd.createVar()); // dsc 1
+        int a = bdd.ref(bdd.createVar()); // disc 1
         int b = bdd.ref(bdd.createVar()); // disc 2
         int c = bdd.ref(bdd.createVar()); // raid controller
 
@@ -64,7 +59,7 @@ public class TestFactory {
      * Builds the BDD and Markov that corresponds to "Programming Project – Requirements and Testing.pdf" Example
      * @return the bdd and markow
      */
-    public static Pair<BDDNode, Markov> getHFTTestCase() {
+    public static Pair<BDDNode, TimeSeries> getHFTTestCase() {
         BDD bdd = new BDD(20);
 
         int v1 = bdd.ref(bdd.createVar());
@@ -81,14 +76,14 @@ public class TestFactory {
         int n15 = bdd.ref(bdd.and(n14, n13));
         int top = bdd.ref(bdd.and(n15, v6));
 
-        Map<Integer, MCState> varIDToStateMap = new HashMap<>();
+        /* Map<Integer, MCState> varIDToStateMap = new HashMap<>();
         varIDToStateMap.put(bdd.getVar(v1), new MCState("1", 0.9f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.2f, "2"))));
         varIDToStateMap.put(bdd.getVar(v2), new MCState("2", 0.1f, Collections.emptyList(), Arrays.asList(new MCTransition(0.1f, "1"), new MCTransition(0.1f, "3"))));
         varIDToStateMap.put(bdd.getVar(v3), new MCState("3", 0.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.05f, "2"))));
         varIDToStateMap.put(bdd.getVar(v4), new MCState("4", 1.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.1f, "5"))));
         varIDToStateMap.put(bdd.getVar(v5), new MCState("5", 0.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.05f, "6"))));
-        varIDToStateMap.put(bdd.getVar(v5), new MCState("6", 0.0f, Collections.emptyList(), Collections.emptyList()));
+        varIDToStateMap.put(bdd.getVar(v5), new MCState("6", 0.0f, Collections.emptyList(), Collections.emptyList())); */
 
-        return new Pair<>(new BDDNode(bdd, top), new Markov(varIDToStateMap));
+        return new Pair<>(new BDDNode(bdd, top), new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv")));
     }
 }

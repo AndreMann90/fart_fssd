@@ -52,26 +52,7 @@ public class Evaluation {
         } else if(node.isOne()) {
             return Stream.generate(ones);
         } else {
-            final Stream<Float> current = timeSeries.getProbabilitySeries(node.getVarID());
-
-            final Stream<Float> low = constructFormulaTopDown(node.getLowChild());
-            final Stream<Float> high = constructFormulaTopDown(node.getHighChild());
-
-            if(low == null && high == null) {
-                return null;
-            } else {
-                final Stream<Float> result;
-
-                if(high == null) {
-                    result = zip(current, low, (c, l) -> (1-l) * c);
-                } else if(low == null) {
-                    result = zip(current, high, (c, h) -> c * h);
-                } else {
-                    result = zip(current, low, high, (c, l, h) -> ((1-c) * l) + (c * h));
-                }
-
-                return result;
-            }
+            return constructFormulaFromChild(node);
         }
     }
 
@@ -91,7 +72,7 @@ public class Evaluation {
     }
 
     /**
-     * Constructs the formula top down.
+     * Constructs the formula top down using a comuted table
      * @param node the root node
      * @return formula encoded in stream, null if coming from zero node
      */
@@ -103,26 +84,30 @@ public class Evaluation {
         } else if(computedTable.containsKey(node)) {
             return computedTable.get(node);
         } else {
-            final Stream<Float> current = timeSeries.getProbabilitySeries(node.getVarID());
+            return constructFormulaFromChild(node);
+        }
+    }
 
-            final Stream<Float> low = constructFormulaTopDown(node.getLowChild());
-            final Stream<Float> high = constructFormulaTopDown(node.getHighChild());
+    private @Nullable Stream<Float> constructFormulaFromChild(BDDNode node) {
+        final Stream<Float> current = timeSeries.getProbabilitySeries(node.getVarID());
 
-            if(low == null && high == null) {
-                return null;
+        final Stream<Float> low = constructFormulaTopDown(node.getLowChild());
+        final Stream<Float> high = constructFormulaTopDown(node.getHighChild());
+
+        if(low == null && high == null) {
+            return null;
+        } else {
+            final Stream<Float> result;
+
+            if(high == null) {
+                result = zip(current, low, (c, l) -> (1-l) * c);
+            } else if(low == null) {
+                result = zip(current, high, (c, h) -> c * h);
             } else {
-                final Stream<Float> result;
-
-                if(high == null) {
-                    result = zip(current, low, (c, l) -> (1-l) * c);
-                } else if(low == null) {
-                    result = zip(current, high, (c, h) -> c * h);
-                } else {
-                    result = zip(current, low, high, (c, l, h) -> ((1-c) * l) + (c * h));
-                }
-
-                return result;
+                result = zip(current, low, high, (c, l, h) -> ((1-c) * l) + (c * h));
             }
+
+            return result;
         }
     }
 
@@ -136,14 +121,13 @@ public class Evaluation {
             return constructFormulaBottomUp(oneNode).collect(Collectors.toList());
         }
     }
-*/
+
     /**
      * Constructs the formula bottom up.
      * @param node the one node
      * @return formula encoded in stream
-     */
+     *
     private Stream<Float> constructFormulaBottomUp(BDDNode node) {
-        //TODO revise
         final Stream<Float> current;
         if(node.isOne()) {
             current = Stream.generate(ones);
@@ -165,7 +149,7 @@ public class Evaluation {
             return zip(current, parentStream, (a, b) -> a * b);
         }
     }
-
+*/
 
     private Stream<Float> zip(Stream<Float> aStream, Stream<Float> bStream, BiFunction<Float, Float, Float> op) {
         return StreamUtils.zip(aStream, bStream, op);

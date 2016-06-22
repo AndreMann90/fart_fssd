@@ -30,4 +30,8 @@ public class Markov implements TimeSeries {
     public Stream<Float> getProbabilitySeries(int varID) {
         return null; //TODO
     }
+
+    public boolean equalsToTimeSeries(TimeSeries timeSeries) {
+        return false; // TODO: implement
+    }
 }

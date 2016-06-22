@@ -9,6 +9,7 @@ import de.fssd.util.TestFactory;
 import java.io.File;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 public class BuiltTest {
 
@@ -29,10 +30,10 @@ public class BuiltTest {
         BDDBuilder b = new BDDBuilder();
 
         Pair<BDDNode, Markov> r = b.build(t);
-        Pair<BDDNode, Markov> e = TestFactory.getHFTTestCase();
+        Pair<BDDNode, TimeSeries> e = TestFactory.getHFTTestCase();
 
         assertEquals("BDDs are not equal", r.getKey(), e.getKey());
-        assertEquals("Markovs are not equal", r.getValue(), e.getValue()); //TODO: implement markov and its equal method
+        assertTrue("Markovs are not equal", r.getValue().equalsToTimeSeries(e.getValue()));
 
         System.out.println("Top node: " + r.getKey().getNodeID());
         Dot.setRemoveDotFile(false);
