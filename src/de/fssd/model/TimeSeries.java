@@ -11,7 +11,7 @@ public interface TimeSeries {
      * Returns the number of timestamps in the series
      * @return number of timestamps
      */
-    int getTimeseriesCount();
+    int getSamplePointsCount();
 
     /**
      * Returns the timeseries for a given variable id

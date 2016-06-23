@@ -72,7 +72,7 @@ public class TimeSeriesFromCSV implements TimeSeries {
     }
 
     @Override
-    public int getTimeseriesCount() {
+    public int getSamplePointsCount() {
         return numberSamplingPoints;
     }
 

@@ -3,7 +3,6 @@ package de.fssd.model;
 import de.fssd.dataobjects.FaultTree;
 import de.fssd.dataobjects.MCState;
 import de.fssd.dataobjects.MCTransition;
-import org.apache.commons.math3.exception.*;
 import org.apache.commons.math3.linear.*;
 
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ public class Markov implements TimeSeries {
     private boolean stable;
     private HashMap<String, Integer> statemap;
     private Map<Integer, MCState> varmap;
+    private int sampleCount;
 
     public static class MarkovException extends RuntimeException {
         public MarkovException(String message) {
@@ -29,7 +29,8 @@ public class Markov implements TimeSeries {
         }
     }
 
-    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) throws MarkovException {
+    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap, int sampleCount) throws MarkovException {
+        this.sampleCount = sampleCount;
         stable = false;
 
         iterations = new ArrayList<>();
@@ -100,8 +101,8 @@ public class Markov implements TimeSeries {
      * Returns the number of timestamps in the series
      * @return number of timestamps
      */
-    public int getTimeseriesCount() {
-        return 0; //TODO
+    public int getSamplePointsCount() {
+        return sampleCount;
     }
 
     /**
@@ -110,7 +111,7 @@ public class Markov implements TimeSeries {
      * @return timeseries
      */
     public Stream<Float> getProbabilitySeries(int varID) {
-        return IntStream.range(0, this.getTimeseriesCount()).mapToObj(n->new Float(this.getVarState(n, varID)));
+        return IntStream.range(0, this.getSamplePointsCount()).mapToObj(n->new Float(this.getVarState(n, varID)));
     }
 
     public boolean equalsToTimeSeries(TimeSeries timeSeries) {

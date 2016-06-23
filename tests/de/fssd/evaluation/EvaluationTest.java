@@ -53,7 +53,7 @@ public class EvaluationTest {
 
         Evaluation evaluation = new Evaluation(new TimeSeries() {
             @Override
-            public int getTimeseriesCount() {
+            public int getSamplePointsCount() {
                 return 3;
             }
 
@@ -81,7 +81,7 @@ public class EvaluationTest {
 
         Evaluation evaluation = new Evaluation(new TimeSeries() {
             @Override
-            public int getTimeseriesCount() {
+            public int getSamplePointsCount() {
                 return 3;
             }
 

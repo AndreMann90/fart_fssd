@@ -30,13 +30,13 @@ public class Evaluation {
         if(!rootNode.isRoot()) {
             throw new AssertionError("Not the root node");
         } else if(rootNode.isOne()) {
-            return Collections.nCopies(timeSeries.getTimeseriesCount(), 1f);
+            return Collections.nCopies(timeSeries.getSamplePointsCount(), 1f);
         }
         Stream<Float> result = constructFormulaTopDown(rootNode);
         if(result != null) {
             return result.collect(Collectors.toList());
         } else {
-            return Collections.nCopies(timeSeries.getTimeseriesCount(), 0f);
+            return Collections.nCopies(timeSeries.getSamplePointsCount(), 0f);
         }
     }
 
@@ -60,14 +60,14 @@ public class Evaluation {
         if(!rootNode.isRoot()) {
             throw new AssertionError("Not the root node");
         } else if(rootNode.isOne()) {
-            return Collections.nCopies(timeSeries.getTimeseriesCount(), 1f);
+            return Collections.nCopies(timeSeries.getSamplePointsCount(), 1f);
         }
         computedTable = new HashMap<>();
         Stream<Float> result = constructFormulaTopDownWithComputedTable(rootNode);
         if(result != null) {
             return result.collect(Collectors.toList());
         } else {
-            return Collections.nCopies(timeSeries.getTimeseriesCount(), 0f);
+            return Collections.nCopies(timeSeries.getSamplePointsCount(), 0f);
         }
     }
 
@@ -116,7 +116,7 @@ public class Evaluation {
         if(!oneNode.isOne()) {
             throw new AssertionError("Not one node");
         } else if(oneNode.isRoot()) {
-            return Collections.nCopies(timeSeries.getTimeseriesCount(), 0f);
+            return Collections.nCopies(timeSeries.getSamplePointsCount(), 0f);
         } else {
             return constructFormulaBottomUp(oneNode).collect(Collectors.toList());
         }

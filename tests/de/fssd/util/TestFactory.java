@@ -41,7 +41,7 @@ public class TestFactory {
         TimeSeries timeSeries = new TimeSeries() {
 
             @Override
-            public int getTimeseriesCount() {
+            public int getSamplePointsCount() {
                 return 3;
             }
 
