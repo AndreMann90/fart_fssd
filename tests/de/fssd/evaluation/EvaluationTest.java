@@ -3,6 +3,7 @@ package de.fssd.evaluation;
 import de.fssd.model.BDDNode;
 import de.fssd.model.TimeSeries;
 import de.fssd.util.TestFactory;
+import de.fssd.util.TimeSeriesFromCSV;
 import javafx.util.Pair;
 import jdd.bdd.BDD;
 import org.junit.Test;
@@ -30,6 +31,19 @@ public class EvaluationTest {
         end = System.currentTimeMillis();
         assertEquals(expected, evaluated);
         System.out.println(testCase + ": evaluateWithRootNodeAndComputedTable successful within " + (end-start) + "ms");
+    }
+
+    @Test
+    public void evaluateWithRootNode_HFTTestCase() throws Exception {
+        Pair<BDDNode, TimeSeriesFromCSV> htf = TestFactory.getHFTTestCase();
+
+        TimeSeriesFromCSV timeSeries = htf.getValue();
+        BDDNode rootNode = htf.getKey();
+
+        System.out.println(rootNode.getTreeString());
+        Evaluation evaluation = new Evaluation(timeSeries);
+
+        testEvaluationMethods("RAID", evaluation, rootNode, timeSeries.getRemainingResultPerID("g16"));
     }
 
     @Test

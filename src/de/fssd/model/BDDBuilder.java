@@ -114,6 +114,6 @@ public class BDDBuilder {
             }
         }
 
-        return new BDDBuildResult(new BDDNode(bdd, top), new Markov(t, varIDToStateMap), varIDToStateMap);
+        return new BDDBuildResult(new BDDNode(bdd, top), new Markov(t, varIDToStateMap, t.getSampleCount()), varIDToStateMap);
     }
 }
