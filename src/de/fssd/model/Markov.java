@@ -9,6 +9,7 @@ import org.apache.commons.math3.linear.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -107,7 +108,7 @@ public class Markov implements TimeSeries {
      * @return timeseries
      */
     public Stream<Float> getProbabilitySeries(int varID) {
-        return Stream.iterate(0, n->n).map(n->this.getVarState(n, varID));
+        return IntStream.range(0, this.getTimeseriesCount()).mapToObj(n->this.getVarState(n, varID));
     }
 
     public boolean equalsToTimeSeries(TimeSeries timeSeries) {
