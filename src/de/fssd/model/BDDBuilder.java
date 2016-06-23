@@ -65,7 +65,7 @@ public class BDDBuilder {
      * @param t the fault tree
      * @return the root node and Markov States
      */
-    public Pair<BDDNode, Markov> build(FaultTree t) {
+    public BDDBuildResult build(FaultTree t) {
         /* Return bdd, top node, markov states */
         updateDependencies(t);
 
@@ -115,6 +115,6 @@ public class BDDBuilder {
             }
         }
 
-        return new Pair<>(new BDDNode(bdd, top), new Markov(varIDToStateMap));
+        return new BDDBuildResult(new BDDNode(bdd, top), new Markov(t, varIDToStateMap), varIDToStateMap);
     }
 }

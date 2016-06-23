@@ -1,7 +1,13 @@
 package de.fssd.model;
 
+import de.fssd.dataobjects.FaultTree;
 import de.fssd.dataobjects.MCState;
+import de.fssd.dataobjects.MCTransition;
+import org.apache.commons.math3.exception.*;
+import org.apache.commons.math3.linear.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -9,9 +15,72 @@ import java.util.stream.Stream;
  * Created by Andre on 16.06.2016.
  */
 public class Markov implements TimeSeries {
+    private ArrayRealVector initial_states;
+    private BlockRealMatrix transitions;
+    private ArrayList<RealMatrix> iterations;
+    private boolean stable;
+    private HashMap<String, Integer> statemap;
+    private Map<Integer, MCState> varmap;
 
-    public Markov(Map<Integer, MCState> varIDToStateMap) {
-        //TODO
+    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) {
+        stable = false;
+
+        iterations = new ArrayList<>();
+        initial_states = new ArrayRealVector(t.getChain().size());
+
+        transitions = new BlockRealMatrix(t.getChain().size(), t.getChain().size());
+
+        statemap = new HashMap<>();
+        varmap = varIDToStateMap;
+
+        Integer idx = 0;
+        for (MCState s: t.getChain()) {
+            statemap.put(s.getId(), idx);
+            initial_states.setEntry(idx, s.getP0());
+            idx++;
+        }
+
+        for (MCState s: t.getChain()) {
+            for (MCTransition tr: s.getTransitions()) {
+                transitions.setEntry(statemap.get(s.getId()), statemap.get(tr.getState()), tr.getP());
+                System.out.println("Adding transition from " + s.getId() + " to " + tr.getState());
+            }
+        }
+
+        iterations.add(transitions);
+
+        System.out.println(initial_states);
+    }
+
+    private RealMatrix iterate() {
+        int last = iterations.size() - 1;
+        if (stable) {
+            return iterations.get(last);
+        }
+
+        RealMatrix m = iterations.get(last).multiply(transitions);
+
+        if (m.equals(iterations.get(last))) {
+            stable = true;
+        } else {
+            iterations.add(m);
+        }
+
+        return m;
+    }
+
+    public Float getVarState(int t, int varid) {
+        /*
+        if (t < iterations.size()) {
+            return iterations.get(t).operate(initial_states).getEntry(varidx);
+        }
+        */
+
+        /* Map Variable ID to entry in initial state vector */
+        int idx = statemap.get(varmap.get(varid).getId());
+
+        /* XXX: Caching and what not */
+        return new Float(transitions.power(t).operate(initial_states).getEntry(idx));
     }
 
     /**

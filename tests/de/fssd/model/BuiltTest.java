@@ -29,13 +29,13 @@ public class BuiltTest {
 
         BDDBuilder b = new BDDBuilder();
 
-        Pair<BDDNode, Markov> r = b.build(t);
+        BDDBuildResult r = b.build(t);
         Pair<BDDNode, TimeSeries> e = TestFactory.getHFTTestCase();
 
-        assertEquals("BDDs are not equal", r.getKey(), e.getKey());
-        assertTrue("Markovs are not equal", r.getValue().equalsToTimeSeries(e.getValue()));
+        assertEquals("BDDs are not equal", r.b, e.getKey());
+        assertTrue("Markovs are not equal", r.m.equalsToTimeSeries(e.getValue()));
 
-        System.out.println("Top node: " + r.getKey().getNodeID());
+        System.out.println("Top node: " + r.b.getNodeID());
         Dot.setRemoveDotFile(false);
         // r.bdd.printDot("bla.dot", r.top);
     }
