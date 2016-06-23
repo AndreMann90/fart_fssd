@@ -1,23 +1,23 @@
 {
   "nodes": [
     { "id": "g11",
-      "out": ["12"],
+      "out": ["g12"],
       "op": ">=1"
     },
     { "id": "g12",
-      "out": ["14"],
+      "out": ["g14"],
       "op": "&"
     },
     { "id": "g13",
-      "out": ["14", "15"],
+      "out": ["g14", "g15"],
       "op": "&"
     },
     { "id": "g14",
-      "out": ["15"],
+      "out": ["g15"],
       "op": ">=1"
     },
     { "id": "g15",
-      "out": ["16"],
+      "out": ["g16"],
       "op": "&"
     },
     { "id": "g16",
@@ -29,33 +29,33 @@
   "chain": [
     { "id": "s1",
       "p0": 0.9,
-      "out": ["11"],
-      "transitions": [ { "p": 0.2, "state": "2"} ]
+      "out": ["g11"],
+      "transitions": [ { "p": 0.2, "state": "s2"} ]
     },
     { "id": "s2",
       "p0": 0.1,
-      "out": ["11", "13"],
+      "out": ["g11", "g13"],
       "transitions": [
-        { "p": 0.1, "state": "1" },
-        { "p": 0.1, "state": "3" }
+        { "p": 0.1, "state": "s1" },
+        { "p": 0.1, "state": "s3" }
       ]
     },
     { "id": "s3",
-      "out": ["14"],
-      "transitions": [ { "p": 0.05, "state": "2"} ]
+      "out": ["g14"],
+      "transitions": [ { "p": 0.05, "state": "s2"} ]
     },
     { "id": "s4",
       "p0": 1,
-      "out": ["12"],
-      "transitions": [ { "p": 0.1, "state": "5"} ]
+      "out": ["g12"],
+      "transitions": [ { "p": 0.1, "state": "s5"} ]
     },
     { "id": "s5",
-      "out": ["13"],
-      "transitions": [ { "p": 0.05, "state": "6"} ]
+      "out": ["g13"],
+      "transitions": [ { "p": 0.05, "state": "s6"} ]
     },
     {
       "id": "s6",
-      "out": [ "16" ],
+      "out": [ "g16" ],
       "transitions": []
     }
   ]
