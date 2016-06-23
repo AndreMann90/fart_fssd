@@ -1,6 +1,6 @@
 {
-  "sampleCount" : 80,
-  "missionTime": 40,
+  "sampleCount" : 81,
+  "missionTime": 40.0,
   "nodes": [
     { "id": "g11",
       "out": ["g12"],
