@@ -39,7 +39,7 @@ public class EvaluationTest {
         System.out.println(rootNode.getTreeString());
         Evaluation evaluation = new Evaluation(raid.getValue());
 
-        testEvaluationMethods("RAID", evaluation, rootNode, Arrays.asList(0f, 0.136f, 1f));
+        testEvaluationMethods("RAID", evaluation, rootNode, TestFactory.getRaidTestResult());
     }
 
     @Test

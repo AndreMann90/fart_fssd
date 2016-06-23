@@ -6,13 +6,19 @@ import javafx.util.Pair;
 import jdd.bdd.BDD;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
  * Created by Andre on 21.06.2016.
  */
 public class TestFactory {
+
+    private static final int RAID_TEST_LENGTH = 400000;
 
     /**
      * Builds the BDD and Markov that corresponds to the Faulttree for the RAID in the Programming Project Intro Slides
@@ -33,6 +39,7 @@ public class TestFactory {
         final int bVar = bdd.getVar(b);
         final int cVar = bdd.getVar(c);
         TimeSeries timeSeries = new TimeSeries() {
+
             @Override
             public int getTimeseriesCount() {
                 return 3;
@@ -41,11 +48,11 @@ public class TestFactory {
             @Override
             public Stream<Float> getProbabilitySeries(int varID) {
                 if (varID == aVar) {
-                    return Arrays.asList(0f, 0.2f, 1f).stream();
+                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH).stream();
                 } else if (varID == bVar) {
-                    return Arrays.asList(0f, 0.2f, 1f).stream();
+                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH).stream();
                 } else if (varID == cVar) {
-                    return Arrays.asList(0f, 0.1f, 1f).stream();
+                    return makeStreamForTest(0.1f, RAID_TEST_LENGTH).stream();
                 } else {
                     return null;
                 }
@@ -55,11 +62,25 @@ public class TestFactory {
         return new Pair<>(new BDDNode(bdd, top), timeSeries);
     }
 
+    public static List<Float> getRaidTestResult() {
+        return makeStreamForTest(0.136f, RAID_TEST_LENGTH);
+    }
+
+    private static List<Float> makeStreamForTest(float midValue, int midValueCount) {
+        List<Float> arrayList = new ArrayList<>(midValueCount + 2);
+        arrayList.add(0f);
+        arrayList.addAll(Collections.nCopies(midValueCount, midValue));
+        arrayList.add(1f);
+        return arrayList;
+    }
+
+
+
     /**
      * Builds the BDD and Markov that corresponds to "Programming Project – Requirements and Testing.pdf" Example
      * @return the bdd and markow
      */
-    public static Pair<BDDNode, TimeSeries> getHFTTestCase() {
+    public static Pair<BDDNode, TimeSeries> getHFTTestCase() throws IOException {
         BDD bdd = new BDD(20);
 
         int v1 = bdd.ref(bdd.createVar());
@@ -84,6 +105,6 @@ public class TestFactory {
         varIDToStateMap.put(bdd.getVar(v5), new MCState("5", 0.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.05f, "6"))));
         varIDToStateMap.put(bdd.getVar(v5), new MCState("6", 0.0f, Collections.emptyList(), Collections.emptyList())); */
 
-        return new Pair<>(new BDDNode(bdd, top), new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv")));
+        return new Pair<>(new BDDNode(bdd, top), new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"), Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3), bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6))));
     }
 }
