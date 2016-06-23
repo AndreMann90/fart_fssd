@@ -5,9 +5,8 @@ import de.fssd.dataobjects.MCState;
 import de.fssd.dataobjects.MCTransition;
 import org.apache.commons.math3.linear.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -22,6 +21,7 @@ public class Markov implements TimeSeries {
     private HashMap<String, Integer> statemap;
     private Map<Integer, MCState> varmap;
     private int sampleCount;
+    private float sampleTime;
 
     public static class MarkovException extends RuntimeException {
         public MarkovException(String message) {
@@ -31,6 +31,7 @@ public class Markov implements TimeSeries {
 
     public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) throws MarkovException {
         sampleCount = t.getSampleCount();
+        sampleTime = t.getMissionTime() / (sampleCount - 1);
         stable = false;
 
         iterations = new ArrayList<>();
@@ -105,16 +106,32 @@ public class Markov implements TimeSeries {
         return sampleCount;
     }
 
+    private Float uniformizationFcn(Float t) {
+        return 0f; // TODO
+    }
+
     /**
      * Returns the timeseries for a given variable id
      * @param varID variable id
      * @return timeseries
      */
     public Stream<Float> getProbabilitySeries(int varID) {
-        return IntStream.range(0, this.getSamplePointsCount()).mapToObj(n->new Float(this.getVarState(n, varID)));
+        Stream<Float> sampleTimeStream = IntStream.range(0, getSamplePointsCount()).mapToObj(i -> i * this.sampleTime);
+        return sampleTimeStream.map(this::uniformizationFcn);
+    }
+
+    private Collection<Integer> getVarIDs() {
+        return varmap.keySet();
     }
 
     public boolean equalsToTimeSeries(TimeSeries timeSeries) {
-        return false; // TODO: implement
+        for (Integer varID : getVarIDs()) {
+            List<Float> thisSeries = getProbabilitySeries(varID).collect(Collectors.toList());
+            List<Float> otherSeries = timeSeries.getProbabilitySeries(varID).collect(Collectors.toList());
+            if(!thisSeries.equals(otherSeries)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
