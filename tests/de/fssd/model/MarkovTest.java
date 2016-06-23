@@ -29,7 +29,7 @@ public class MarkovTest {
         Assert.assertTrue(vs.get(0) > 0);
         Assert.assertTrue(vs.get(1) > 0);
         Assert.assertTrue(vs.get(2) > 0);
-        Assert.assertTrue(vs.get(3) == 0);
+        Assert.assertTrue(vs.get(3) <= Math.ulp(0));
         Assert.assertTrue(vs.get(4) > 0);
         Assert.assertTrue(vs.get(5) > 0);
     }
