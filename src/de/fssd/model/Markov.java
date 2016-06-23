@@ -80,18 +80,20 @@ public class Markov implements TimeSeries {
         return m;
     }
 
-    public Float getVarState(int t, int varid) {
-        /*
-        if (t < iterations.size()) {
-            return iterations.get(t).preMultiply(initial_states).getEntry(varidx);
-        }
-        */
-
+    public double getVarState(int t, int varid) {
         /* Map Variable ID to entry in initial state vector */
         int idx = statemap.get(varmap.get(varid).getId());
 
-        /* XXX: Caching and what not */
-        return new Float(transitions.power(t).preMultiply(initial_states).getEntry(idx));
+        if (t < iterations.size()) {
+            return iterations.get(t).preMultiply(initial_states).getEntry(idx);
+        }
+
+        RealMatrix m = iterations.get(0);
+        for (int off = iterations.size() - 1; off < t && !stable; off++) {
+            m = iterate();
+        }
+
+        return m.preMultiply(initial_states).getEntry(idx);
     }
 
     /**
@@ -108,7 +110,7 @@ public class Markov implements TimeSeries {
      * @return timeseries
      */
     public Stream<Float> getProbabilitySeries(int varID) {
-        return IntStream.range(0, this.getTimeseriesCount()).mapToObj(n->this.getVarState(n, varID));
+        return IntStream.range(0, this.getTimeseriesCount()).mapToObj(n->new Float(this.getVarState(n, varID)));
     }
 
     public boolean equalsToTimeSeries(TimeSeries timeSeries) {

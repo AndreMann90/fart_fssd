@@ -16,10 +16,10 @@ public class MarkovTest {
 
         Markov m = r.m;
 
-        ArrayList<Float> vs = new ArrayList<>();
+        ArrayList<Double> vs = new ArrayList<>();
 
         for (Integer varId: r.stateMap.keySet()) {
-            Float s = m.getVarState(1000, varId);
+            Double s = m.getVarState(1000, varId);
             vs.add(s);
 
             System.out.println("Var: " + r.stateMap.get(varId).getId() + " : " + s);
