@@ -29,8 +29,8 @@ public class Markov implements TimeSeries {
         }
     }
 
-    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap, int sampleCount) throws MarkovException {
-        this.sampleCount = sampleCount;
+    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) throws MarkovException {
+        sampleCount = t.getSampleCount();
         stable = false;
 
         iterations = new ArrayList<>();
