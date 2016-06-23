@@ -57,12 +57,9 @@ public class Markov implements TimeSeries {
                 throw new MarkovException("Invalid state transition from state: " + s.getId());
             }
             transitions.setEntry(statemap.get(s.getId()), statemap.get(s.getId()), residual);
-            System.out.println("Residual p for state " + s.getId() + ": " + residual);
         }
 
         iterations.add(transitions);
-
-        System.out.println(transitions);
     }
 
     private RealMatrix iterate() {
@@ -85,7 +82,7 @@ public class Markov implements TimeSeries {
     public Float getVarState(int t, int varid) {
         /*
         if (t < iterations.size()) {
-            return iterations.get(t).operate(initial_states).getEntry(varidx);
+            return iterations.get(t).preMultiply(initial_states).getEntry(varidx);
         }
         */
 
