@@ -57,6 +57,7 @@ public class Markov implements TimeSeries {
                 throw new MarkovException("Invalid state transition from state: " + s.getId());
             }
             transitions.setEntry(statemap.get(s.getId()), statemap.get(s.getId()), residual);
+            System.out.println("Residual p for state " + s.getId() + ": " + residual);
         }
 
         iterations.add(transitions);
@@ -92,7 +93,7 @@ public class Markov implements TimeSeries {
         int idx = statemap.get(varmap.get(varid).getId());
 
         /* XXX: Caching and what not */
-        return new Float(transitions.power(t).operate(initial_states).getEntry(idx));
+        return new Float(transitions.power(t).preMultiply(initial_states).getEntry(idx));
     }
 
     /**
@@ -109,7 +110,7 @@ public class Markov implements TimeSeries {
      * @return timeseries
      */
     public Stream<Float> getProbabilitySeries(int varID) {
-        return null; //TODO
+        return Stream.iterate(0, n->n).map(n->this.getVarState(n, varID));
     }
 
     public boolean equalsToTimeSeries(TimeSeries timeSeries) {
