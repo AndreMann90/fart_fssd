@@ -80,7 +80,7 @@ public class TestFactory {
      * Builds the BDD and Markov that corresponds to "Programming Project – Requirements and Testing.pdf" Example
      * @return the bdd and markow
      */
-    public static Pair<BDDNode, TimeSeries> getHFTTestCase() throws IOException {
+    public static Pair<BDDNode, TimeSeriesFromCSV> getHFTTestCase() throws IOException {
         BDD bdd = new BDD(20);
 
         int v1 = bdd.ref(bdd.createVar());

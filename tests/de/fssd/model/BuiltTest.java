@@ -2,6 +2,7 @@ package de.fssd.model;
 
 import de.fssd.dataobjects.FaultTree;
 import de.fssd.parser.Parser;
+import de.fssd.util.TimeSeriesFromCSV;
 import javafx.util.Pair;
 import jdd.util.Dot;
 import de.fssd.util.TestFactory;
@@ -30,7 +31,7 @@ public class BuiltTest {
         BDDBuilder b = new BDDBuilder();
 
         BDDBuildResult r = b.build(t);
-        Pair<BDDNode, TimeSeries> e = TestFactory.getHFTTestCase();
+        Pair<BDDNode, TimeSeriesFromCSV> e = TestFactory.getHFTTestCase();
 
         assertEquals("BDDs are not equal", r.b, e.getKey());
         assertTrue("Markovs are not equal", r.m.equalsToTimeSeries(e.getValue()));
