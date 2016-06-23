@@ -24,10 +24,8 @@ public class MarkovTest {
 
         Markov m = r.m;
 
-        System.out.println(m);
-
         for (Integer varId: r.stateMap.keySet()) {
-            System.out.println(m.getVarState(1000, varId));
+            System.out.println("Var: " + r.stateMap.get(varId).getId() + " : " + m.getVarState(1000, varId));
         }
     }
 }

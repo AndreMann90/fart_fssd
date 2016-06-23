@@ -22,7 +22,13 @@ public class Markov implements TimeSeries {
     private HashMap<String, Integer> statemap;
     private Map<Integer, MCState> varmap;
 
-    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) {
+    public static class MarkovException extends RuntimeException {
+        public MarkovException(String message) {
+            super(message);
+        }
+    }
+
+    public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) throws MarkovException {
         stable = false;
 
         iterations = new ArrayList<>();
@@ -41,15 +47,21 @@ public class Markov implements TimeSeries {
         }
 
         for (MCState s: t.getChain()) {
+            float residual = 1.0f;
             for (MCTransition tr: s.getTransitions()) {
                 transitions.setEntry(statemap.get(s.getId()), statemap.get(tr.getState()), tr.getP());
-                System.out.println("Adding transition from " + s.getId() + " to " + tr.getState());
+                residual -= tr.getP();
             }
+            if ((residual < 0) || (residual > 1)) {
+                /* Weird things happened */
+                throw new MarkovException("Invalid state transition from state: " + s.getId());
+            }
+            transitions.setEntry(statemap.get(s.getId()), statemap.get(s.getId()), residual);
         }
 
         iterations.add(transitions);
 
-        System.out.println(initial_states);
+        System.out.println(transitions);
     }
 
     private RealMatrix iterate() {

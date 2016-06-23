@@ -77,9 +77,7 @@ public class BDDBuilder {
             int var = bdd.ref(bdd.createVar());
             stateToNodeIDMap.put(s, var);
             varIDToStateMap.put(bdd.getVar(var), s);
-            System.out.println("Creating variable " + s.getId());
         }
-        System.out.println("Done creating " + stateToNodeIDMap.size() + " vars");
 
         Map<FaultTreeNode, Integer> bddnodes = new HashMap<>();
 
@@ -109,8 +107,6 @@ public class BDDBuilder {
                     bddnodes.put(n, multiOp(bdd, inputs, n.getOp()));
                     changed = true;
                     top = bddnodes.get(n);
-
-                    System.out.println("Node [" + top + "] " + n.getId() + ": " + inputs);
                 }
             }
         }
