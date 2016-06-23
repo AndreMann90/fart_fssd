@@ -29,6 +29,12 @@ public class TimeSeriesFromCSV implements TimeSeries {
         parseCSV(file, varIdsOrdered);
     }
 
+    public TimeSeriesFromCSV(File file) throws IOException {
+        varIdToSeriesMap = new HashMap<>();
+        gateIdToSeriesMap = new HashMap<>();
+        parseCSV(file, Collections.emptyList());
+    }
+
     private void parseCSV(File file, List<Integer> varIdsOrdered) throws IOException {
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) { // Auto closeable, no explicit close required
@@ -75,7 +81,7 @@ public class TimeSeriesFromCSV implements TimeSeries {
         return varIdToSeriesMap.get(varID).stream();
     }
 
-    public List<Float> getGateResult(String gateID) {
+    public List<Float> getRemainingResultPerID(String gateID) {
         return gateIdToSeriesMap.get(gateID);
     }
 }

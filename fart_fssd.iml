@@ -45,5 +45,6 @@
     </orderEntry>
     <orderEntry type="library" name="net.sf.supercsv:super-csv:2.4.0" level="project" />
     <orderEntry type="library" name="commons-math3-3.6.1" level="project" />
+    <orderEntry type="library" name="commons-math3-3.6.1" level="project" />
   </component>
 </module>
