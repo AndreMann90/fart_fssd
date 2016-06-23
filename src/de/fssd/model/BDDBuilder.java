@@ -49,6 +49,9 @@ public class BDDBuilder {
         for (String outID : node.getOut()) {
             FaultTreeNode outNode = map.get(outID);
             node.getOutputs().add(outNode);
+            if (outNode == null) {
+                throw new BDDBuildException("Invalid BDD specification, check your transitions");
+            }
             outNode.getInputs().add(node);
         }
     }
