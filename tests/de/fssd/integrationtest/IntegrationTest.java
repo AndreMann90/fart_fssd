@@ -19,8 +19,8 @@ public class IntegrationTest {
         Parser parser = new Parser();
         FaultTree faultTree = parser.parse(new File("testcases/HFTTestCase.json"));
         BDDBuildResult result = new BDDBuilder().build(faultTree);
-        Evaluation evaluation = new Evaluation(result.m);
-        List<Float> topEventSeries = evaluation.evaluateWithRootNodeAndComputedTable(result.b);
+        Evaluation evaluation = new Evaluation(result.markov);
+        List<Float> topEventSeries = evaluation.evaluateWithRootNodeAndComputedTable(result.rootNode);
 
         List<Float> expectedTopEventSeries = new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"))
                 .getRemainingResultPerID("g16");

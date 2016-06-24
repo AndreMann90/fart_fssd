@@ -51,7 +51,7 @@ public class TimeSeriesFromCSV implements TimeSeries {
                 gateIdToSeriesMap.put(header[i], new LinkedList<>());
             }
 
-            System.out.println(Arrays.toString(header));
+            //System.out.println(Arrays.toString(header));
 
             Map<String, String> customerMap;
             while( (customerMap = mapReader.read(header)) != null ) {
@@ -66,8 +66,8 @@ public class TimeSeriesFromCSV implements TimeSeries {
                     gateIdToSeriesMap.get(nodeID).add(value);
                 }
             }
-            System.out.println(varIdToSeriesMap);
-            System.out.println(gateIdToSeriesMap);
+            //System.out.println(varIdToSeriesMap);
+            //System.out.println(gateIdToSeriesMap);
         }
     }
 
@@ -83,5 +83,13 @@ public class TimeSeriesFromCSV implements TimeSeries {
 
     public List<Float> getRemainingResultPerID(String gateID) {
         return gateIdToSeriesMap.get(gateID);
+    }
+
+    @Override
+    public String toString() {
+        return "TimeSeriesFromCSV{" +
+                "sampleCount=" + numberSamplingPoints +
+                ", varIdToSeries=" + varIdToSeriesMap +
+                '}';
     }
 }

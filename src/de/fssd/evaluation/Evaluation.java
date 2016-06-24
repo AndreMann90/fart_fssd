@@ -144,9 +144,9 @@ public class Evaluation {
             Stream<Float> parentStream = constructFormulaBottomUp(parents.next());
             while (parents.hasNext()) {
                 Stream<Float> ps = constructFormulaBottomUp(parents.next());
-                parentStream = zip(parentStream, ps, (a, b) -> a + b);
+                parentStream = zip(parentStream, ps, (a, rootNode) -> a + rootNode);
             }
-            return zip(current, parentStream, (a, b) -> a * b);
+            return zip(current, parentStream, (a, rootNode) -> a * rootNode);
         }
     }
 */

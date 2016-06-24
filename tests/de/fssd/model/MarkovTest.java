@@ -1,11 +1,15 @@
 package de.fssd.model;
 
 import de.fssd.parser.Parser;
-import org.junit.Assert;
+import de.fssd.util.TestFactory;
+import de.fssd.util.TimeSeriesFromCSV;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 public class MarkovTest {
     @org.junit.Test
@@ -14,12 +18,15 @@ public class MarkovTest {
 
         BDDBuildResult r = new BDDBuilder().build(p.parse(new File("testcases/HFTTestCase.json")));
 
-        Markov m = r.m;
-
+        Pair<BDDNode, TimeSeriesFromCSV> e = TestFactory.getHFTTestCase();
+        System.out.println("Expected: " + e.getValue());
+        System.out.println("Actual: " + r.markov);
+        assertTrue("Markovs are not equal", r.markov.equalsToTimeSeries(e.getValue()));
+/*
         ArrayList<Double> vs = new ArrayList<>();
 
         for (Integer varId: r.stateMap.keySet()) {
-            Double s = m.getVarState(1000, varId);
+            double s = markov.getVarState(1000, varId);
             vs.add(s);
 
             System.out.println("Var: " + r.stateMap.get(varId).getId() + " : " + s);
@@ -32,5 +39,6 @@ public class MarkovTest {
         Assert.assertTrue(vs.get(3) <= Math.ulp(0));
         Assert.assertTrue(vs.get(4) > 0);
         Assert.assertTrue(vs.get(5) > 0);
+*/
     }
 }

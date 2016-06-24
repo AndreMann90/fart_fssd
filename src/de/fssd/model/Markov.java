@@ -7,95 +7,127 @@ import org.apache.commons.math3.linear.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Created by Andre on 16.06.2016.
+ * Continuous Markov implementation using uniformization
  */
 public class Markov implements TimeSeries {
-    private ArrayRealVector initial_states;
-    private BlockRealMatrix transitions;
-    private ArrayList<RealMatrix> iterations;
-    private boolean stable;
-    private HashMap<String, Integer> statemap;
-    private Map<Integer, MCState> varmap;
+
+    private RealVector currentVector;
+    private BlockRealMatrix transitionMatrix;
+
+    private Map<Integer, McVariable> varmap;
     private int sampleCount;
     private float sampleTime;
 
     public static class MarkovException extends RuntimeException {
-        public MarkovException(String message) {
+        MarkovException(String message) {
             super(message);
+        }
+    }
+
+    /**
+     * Represents the Variable for a MC state
+     */
+    private class McVariable {
+        List<Float> timeSeries = new LinkedList<>();
+        int orderInQ; // ordering in generator matrix Q
+
+        McVariable(int orderInQ) {
+            this.orderInQ = orderInQ;
+        }
+
+        @Override
+        public String toString() {
+            return timeSeries.toString();
         }
     }
 
     public Markov(FaultTree t, Map<Integer, MCState> varIDToStateMap) throws MarkovException {
         sampleCount = t.getSampleCount();
         sampleTime = t.getMissionTime() / (sampleCount - 1);
-        stable = false;
 
-        iterations = new ArrayList<>();
-        initial_states = new ArrayRealVector(t.getChain().size());
+        final int stateCount = t.getChain().size();
 
-        transitions = new BlockRealMatrix(t.getChain().size(), t.getChain().size());
+        float maxRateGamma = Float.NEGATIVE_INFINITY;
+        BlockRealMatrix identity = new BlockRealMatrix(stateCount, stateCount);
 
-        statemap = new HashMap<>();
-        varmap = varIDToStateMap;
+        currentVector = new ArrayRealVector(stateCount);
+        transitionMatrix = new BlockRealMatrix(stateCount, stateCount);
+        varmap = new HashMap<>();
+        Map<String, Integer> nameIdToVarIdMap = new HashMap<>(); // maps the name of sate in file to varId of state given by BDD
 
-        Integer idx = 0;
-        for (MCState s: t.getChain()) {
-            statemap.put(s.getId(), idx);
-            initial_states.setEntry(idx, s.getP0());
-            idx++;
+        // manage mapping of varID that was defined by the bdd library and init the initial probability
+        Integer orderInQ = 0;
+        for (Integer varID : varIDToStateMap.keySet()) {
+            MCState mcState = varIDToStateMap.get(varID);
+
+            varmap.put(varID, new McVariable(orderInQ));
+            nameIdToVarIdMap.put(mcState.getId(), varID);
+
+            currentVector.setEntry(orderInQ, mcState.getP0());
+            identity.setEntry(orderInQ, orderInQ, 1);
+            orderInQ++;
         }
 
-        for (MCState s: t.getChain()) {
+        // fill the matrix and find the maximum entry of this matrix
+        for (Integer varID : varIDToStateMap.keySet()) {
+            int fromOrderId = varmap.get(varID).orderInQ;
+
+            MCState mcState = varIDToStateMap.get(varID);
             float residual = 1.0f;
-            for (MCTransition tr: s.getTransitions()) {
-                transitions.setEntry(statemap.get(s.getId()), statemap.get(tr.getState()), tr.getP());
-                residual -= tr.getP();
+            for (MCTransition tr: mcState.getTransitions()) {
+                int toVarId = nameIdToVarIdMap.get(tr.getState());
+                int toOrderId = varmap.get(toVarId).orderInQ;
+                final float rate = tr.getP();
+                if(rate > maxRateGamma) {
+                    maxRateGamma = rate;
+                }
+                transitionMatrix.setEntry(fromOrderId, toOrderId, rate); // TODO transpose? (change from <-> to)
+                residual -= rate;
             }
             if ((residual < 0) || (residual > 1)) {
                 /* Weird things happened */
-                throw new MarkovException("Invalid state transition from state: " + s.getId());
+                throw new MarkovException("Invalid state transition from state: " + mcState.getId());
             }
-            transitions.setEntry(statemap.get(s.getId()), statemap.get(s.getId()), residual);
+            if(residual > maxRateGamma) {
+                maxRateGamma = residual;
+            }
+            transitionMatrix.setEntry(fromOrderId, fromOrderId, residual);
         }
 
-        iterations.add(transitions);
+        // so far the transitionMatrix is the generator matrix Q, now transform to probability matrix:
+        transitionMatrix.scalarMultiply(1 / maxRateGamma);
+        transitionMatrix.add(identity);
+
+        // TODO apply function to initial probabilities (rates)? (see: https://en.wikipedia.org/wiki/Uniformization_(probability_theory))
+
+        addCurrentVectorToSeries();
+        coputeTimeseries();
     }
 
-    private RealMatrix iterate() {
-        int last = iterations.size() - 1;
-        if (stable) {
-            return iterations.get(last);
+    private void addCurrentVectorToSeries() {
+        for (McVariable var : varmap.values()) {
+            int index = var.orderInQ;
+            final float entry = (float) currentVector.getEntry(index);
+            var.timeSeries.add(entry);
         }
-
-        RealMatrix m = iterations.get(last).multiply(transitions);
-
-        if (m.equals(iterations.get(last))) {
-            stable = true;
-        } else {
-            iterations.add(m);
-        }
-
-        return m;
     }
 
-    public double getVarState(int t, int varid) {
-        /* Map Variable ID to entry in initial state vector */
-        int idx = statemap.get(varmap.get(varid).getId());
+    private void coputeTimeseries() {
+        for (int i = 1; i < getSamplePointsCount(); i++) {
+            RealVector nextVector = transitionMatrix.preMultiply(currentVector); // TODO is preMultiply correct?
 
-        if (t < iterations.size()) {
-            return iterations.get(t).preMultiply(initial_states).getEntry(idx);
+            if(nextVector.getLInfDistance(currentVector) == 0) { // TODO maybe a threshold like 10^-6 or so
+                for(; i < getSamplePointsCount(); i++) {
+                    addCurrentVectorToSeries();
+                }
+            } else {
+                currentVector = nextVector;
+                addCurrentVectorToSeries();
+            }
         }
-
-        RealMatrix m = iterations.get(0);
-        for (int off = iterations.size() - 1; off < t && !stable; off++) {
-            m = iterate();
-        }
-
-        return m.preMultiply(initial_states).getEntry(idx);
     }
 
     /**
@@ -106,8 +138,8 @@ public class Markov implements TimeSeries {
         return sampleCount;
     }
 
-    private Float uniformizationFcn(Float t) {
-        return 0f; // TODO
+    public float getSampleTime() {
+        return sampleTime;
     }
 
     /**
@@ -116,15 +148,17 @@ public class Markov implements TimeSeries {
      * @return timeseries
      */
     public Stream<Float> getProbabilitySeries(int varID) {
-        Stream<Float> sampleTimeStream = IntStream.range(0, getSamplePointsCount()).mapToObj(i -> i * this.sampleTime);
-        return sampleTimeStream.map(this::uniformizationFcn);
+        if(!varmap.containsKey(varID)) {
+            throw new MarkovException("Invalid varId");
+        }
+        return varmap.get(varID).timeSeries.stream();
     }
 
     private Collection<Integer> getVarIDs() {
         return varmap.keySet();
     }
 
-    public boolean equalsToTimeSeries(TimeSeries timeSeries) {
+    boolean equalsToTimeSeries(TimeSeries timeSeries) {
         for (Integer varID : getVarIDs()) {
             List<Float> thisSeries = getProbabilitySeries(varID).collect(Collectors.toList());
             List<Float> otherSeries = timeSeries.getProbabilitySeries(varID).collect(Collectors.toList());
@@ -133,5 +167,14 @@ public class Markov implements TimeSeries {
             }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Markov{" +
+                "sampleCount=" + sampleCount +
+                ", sampleTime=" + sampleTime +
+                ", timeseries=" + varmap +
+                '}';
     }
 }
