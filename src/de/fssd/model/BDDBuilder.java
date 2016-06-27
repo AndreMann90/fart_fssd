@@ -5,7 +5,6 @@ import de.fssd.dataobjects.FaultTree;
 import de.fssd.dataobjects.FaultTreeNode;
 import de.fssd.dataobjects.MCState;
 import de.fssd.parser.ParseException;
-import javafx.util.Pair;
 import jdd.bdd.BDD;
 
 import java.util.*;
