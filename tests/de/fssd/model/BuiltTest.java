@@ -33,15 +33,15 @@ public class BuiltTest {
         BDDBuildResult r = b.build(t);
         Pair<BDDNode, TimeSeriesFromCSV> e = TestFactory.getHFTTestCase();
 
-        System.out.println("Root nodes: " + r.rootNodes);
         assertEquals("Got an unexpected number of BDD root nodes", 1, r.rootNodes.size());
         assertEquals("BDDs are not equal", r.rootNodes.get(0), e.getKey());
+        System.out.println("Markov should: " + e.getValue());
+        System.out.println("Markov is: " + r.markov);
+        /*
         assertTrue("Markovs are not equal", r.markov.equalsToTimeSeries(e.getValue()));
+        */
 
-        for (BDDNode rn: r.rootNodes) {
-            System.out.println("Top node: " + rn.getNodeID());
-        }
         Dot.setRemoveDotFile(false);
-        // r.bdd.printDot("bla.dot", r.top);
+        r.rootNodes.get(0).getBDD().printDot("bla.dot", r.rootNodes.get(0).getNodeID());
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
  * Created by Andre on 19.06.2016.
  */
 public class BDDNode {
-
+    private final BDD bdd;
     private final int nodeID;
     private final int varID;
     private final BDDNode highChild;
@@ -28,6 +28,7 @@ public class BDDNode {
      * @param nodeID the root node
      */
     public BDDNode(BDD bdd, int nodeID) {
+        this.bdd = bdd;
         this.nodeID = nodeID;
         this.varID = bdd.getVar(nodeID);
 
@@ -43,6 +44,8 @@ public class BDDNode {
             lowChild = null;
         }
     }
+
+    public BDD getBDD() { return bdd; }
 
     public int getNodeID() {
         return nodeID;
