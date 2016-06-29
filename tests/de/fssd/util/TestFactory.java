@@ -59,7 +59,7 @@ public class TestFactory {
             }
         };
 
-        return new Pair<>(new BDDNode(bdd, top), timeSeries);
+        return new Pair<>(new BDDNode(bdd, NoStateDependencies.INSTANCE, top), timeSeries);
     }
 
     public static List<Float> getRaidTestResult() {
@@ -97,14 +97,8 @@ public class TestFactory {
         int n15 = bdd.ref(bdd.and(n14, n13));
         int top = bdd.ref(bdd.and(n15, v6));
 
-        /* Map<Integer, MCState> varIDToStateMap = new HashMap<>();
-        varIDToStateMap.put(bdd.getVar(v1), new MCState("1", 0.9f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.2f, "2"))));
-        varIDToStateMap.put(bdd.getVar(v2), new MCState("2", 0.1f, Collections.emptyList(), Arrays.asList(new MCTransition(0.1f, "1"), new MCTransition(0.1f, "3"))));
-        varIDToStateMap.put(bdd.getVar(v3), new MCState("3", 0.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.05f, "2"))));
-        varIDToStateMap.put(bdd.getVar(v4), new MCState("4", 1.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.1f, "5"))));
-        varIDToStateMap.put(bdd.getVar(v5), new MCState("5", 0.0f, Collections.emptyList(), Collections.singletonList(new MCTransition(0.05f, "6"))));
-        varIDToStateMap.put(bdd.getVar(v5), new MCState("6", 0.0f, Collections.emptyList(), Collections.emptyList())); */
+        StateDependenciesBacking s = new StateDependenciesBacking(Arrays.asList(Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3)), Arrays.asList(bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6))));
 
-        return new Pair<>(new BDDNode(bdd, top), new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"), Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3), bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6))));
+        return new Pair<>(new BDDNode(bdd, s, top), new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"), Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3), bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6))));
     }
 }

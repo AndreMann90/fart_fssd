@@ -64,18 +64,18 @@ public class BDDBuilder {
 
     /**
      * Builds the BDD from the fault tree and returns the root node and the Markov
-     * @param t the fault tree
+     * @param faultTree the fault tree
      * @return the root node and Markov States
      */
-    public BDDBuildResult build(FaultTree t) {
+    public BDDBuildResult build(FaultTree faultTree) {
         /* Return bdd, top node, markov states */
-        updateDependencies(t);
+        updateDependencies(faultTree);
 
         BDD bdd = new BDD(1000);
 
         Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
         Map<Integer, MCState> varIDToStateMap = new HashMap<>();
-        for (MCState s: t.getChain()) {
+        for (MCState s: faultTree.getChain()) {
             int var = bdd.ref(bdd.createVar());
             stateToNodeIDMap.put(s, var);
             varIDToStateMap.put(bdd.getVar(var), s);
@@ -88,7 +88,7 @@ public class BDDBuilder {
         boolean changed = true;
         while (changed) {
             changed = false;
-            for (FaultTreeNode n: t.getNodes()) {
+            for (FaultTreeNode n: faultTree.getNodes()) {
                 if (bddnodes.containsKey(n))
                     continue;
                 Vector<Integer> inputs = new Vector<>();
@@ -100,7 +100,7 @@ public class BDDBuilder {
                     }
                     inputs.add(bddnodes.get(i));
                 }
-                for (MCState s : t.getChain()) {
+                for (MCState s : faultTree.getChain()) {
                     if (s.getOut().contains(n.getId()))
                         inputs.add(stateToNodeIDMap.get(s));
                 }
@@ -114,10 +114,11 @@ public class BDDBuilder {
             }
         }
 
+        Markov markov = new Markov(faultTree, varIDToStateMap);
         ArrayList<BDDNode> topNodes = new ArrayList<>();
         for (Integer ni: topNodeIds) {
-            topNodes.add(new BDDNode(bdd, ni));
+            topNodes.add(new BDDNode(bdd, markov, ni));
         }
-        return new BDDBuildResult(topNodes, new Markov(t, varIDToStateMap), varIDToStateMap);
+        return new BDDBuildResult(topNodes, markov, varIDToStateMap);
     }
 }
