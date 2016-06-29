@@ -18,7 +18,8 @@ import java.util.stream.StreamSupport
 /**
  * Continuous Markov implementation using uniformization
  */
-class Markov : TimeSeries {
+class Markov : TimeSeries, StateDependencies {
+
     lateinit private var P0 : RealVector
     lateinit private var transitionMatrix: BlockRealMatrix
 
@@ -177,7 +178,7 @@ class Markov : TimeSeries {
             throw MarkovException("Invalid varId");
         }
 
-        val s = (varmap.get(varID)?.timeSeries) ?: throw MarkovException("Invalid varid: ${varID}")
+        val s = (varmap[varID]?.timeSeries) ?: throw MarkovException("Invalid varid: $varID")
         val i = Spliterators.spliterator(s, 0)
         val x = StreamSupport.stream(i, false)
         return x
@@ -185,6 +186,10 @@ class Markov : TimeSeries {
 
     private fun getVarIDs(): Collection<Int> {
         return varmap.keys;
+    }
+
+    override fun areVariableDependent(varID1: Int, varID2: Int): Boolean {
+        throw UnsupportedOperationException() //TODO
     }
 
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
