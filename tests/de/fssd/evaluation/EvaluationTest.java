@@ -2,6 +2,7 @@ package de.fssd.evaluation;
 
 import de.fssd.model.BDDNode;
 import de.fssd.model.TimeSeries;
+import de.fssd.util.NoStateDependencies;
 import de.fssd.util.TestFactory;
 import de.fssd.util.TimeSeriesFromCSV;
 import javafx.util.Pair;
@@ -21,14 +22,8 @@ public class EvaluationTest {
 
     private void testEvaluationMethods(String testCase, Evaluation evaluation, BDDNode rootNode, List<Float> expected) {
         long start = System.currentTimeMillis();
-        List<Float> evaluated = evaluation.evaluateWithRootNode(rootNode);
+        List<Float> evaluated = evaluation.evaluateWithRootNodeAndComputedTable(rootNode);
         long end = System.currentTimeMillis();
-        assertEquals(expected, evaluated);
-        System.out.println(testCase + ": evaluateWithRootNode successful within " + (end-start) + "ms");
-
-        start = System.currentTimeMillis();
-        evaluated = evaluation.evaluateWithRootNodeAndComputedTable(rootNode);
-        end = System.currentTimeMillis();
         assertEquals(expected, evaluated);
         System.out.println(testCase + ": evaluateWithRootNodeAndComputedTable successful within " + (end-start) + "ms");
     }
@@ -62,7 +57,7 @@ public class EvaluationTest {
         final int a = bdd.ref(bdd.createVar());
         final int b = bdd.ref(bdd.createVar());
         final int top = bdd.ref(bdd.and(a, b));
-        BDDNode rootNode = new BDDNode(bdd, top);
+        BDDNode rootNode = new BDDNode(bdd, NoStateDependencies.INSTANCE, top);
         System.out.println(rootNode.getTreeString());
 
         Evaluation evaluation = new Evaluation(new TimeSeries() {
@@ -90,7 +85,7 @@ public class EvaluationTest {
     public void evaluateWithRootNode_OneVar() throws Exception {
         final BDD bdd = new BDD(10);
         final int top = bdd.ref(bdd.createVar());
-        BDDNode rootNode = new BDDNode(bdd, top);
+        BDDNode rootNode = new BDDNode(bdd, NoStateDependencies.INSTANCE, top);
         System.out.println(rootNode.getTreeString());
 
         Evaluation evaluation = new Evaluation(new TimeSeries() {
