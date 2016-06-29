@@ -119,7 +119,8 @@ public class Markov implements TimeSeries {
         for (int i = 1; i < getSamplePointsCount(); i++) {
             RealVector nextVector = transitionMatrix.preMultiply(currentVector); // TODO is preMultiply correct?
 
-            if(nextVector.getLInfDistance(currentVector) == 0) { // TODO maybe a threshold like 10^-6 or so
+            if(nextVector.getLInfDistance(currentVector) <= Math.ulp(0)) {
+                /* Stable configuration reached, fill up the rest of the time series with the current state vector */
                 for(; i < getSamplePointsCount(); i++) {
                     addCurrentVectorToSeries();
                 }
