@@ -22,23 +22,5 @@ public class MarkovTest {
         System.out.println("Expected: " + e.getValue());
         System.out.println("Actual: " + r.markov);
         assertTrue("Markovs are not equal", r.markov.equalsToTimeSeries(e.getValue()));
-/*
-        ArrayList<Double> vs = new ArrayList<>();
-
-        for (Integer varId: r.stateMap.keySet()) {
-            double s = markov.getVarState(1000, varId);
-            vs.add(s);
-
-            System.out.println("Var: " + r.stateMap.get(varId).getId() + " : " + s);
-            Assert.assertTrue(s >= 0 && s <= 1);
-        }
-
-        Assert.assertTrue(vs.get(0) > 0);
-        Assert.assertTrue(vs.get(1) > 0);
-        Assert.assertTrue(vs.get(2) > 0);
-        Assert.assertTrue(vs.get(3) <= Math.ulp(0));
-        Assert.assertTrue(vs.get(4) > 0);
-        Assert.assertTrue(vs.get(5) > 0);
-*/
     }
 }
