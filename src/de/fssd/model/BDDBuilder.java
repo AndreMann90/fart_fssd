@@ -83,7 +83,7 @@ public class BDDBuilder {
 
         Map<FaultTreeNode, Integer> bddnodes = new HashMap<>();
 
-        Integer top = 0;
+        ArrayList<Integer> topNodeIds = new ArrayList<>();
 
         boolean changed = true;
         while (changed) {
@@ -108,11 +108,16 @@ public class BDDBuilder {
                 if (usable) {
                     bddnodes.put(n, multiOp(bdd, inputs, n.getOp()));
                     changed = true;
-                    top = bddnodes.get(n);
+                    if (n.getOutputs().size() == 0)
+                        topNodeIds.add(bddnodes.get(n));
                 }
             }
         }
 
-        return new BDDBuildResult(new BDDNode(bdd, top), new Markov(t, varIDToStateMap), varIDToStateMap);
+        ArrayList<BDDNode> topNodes = new ArrayList<>();
+        for (Integer ni: topNodeIds) {
+            topNodes.add(new BDDNode(bdd, ni));
+        }
+        return new BDDBuildResult(topNodes, new Markov(t, varIDToStateMap), varIDToStateMap);
     }
 }
