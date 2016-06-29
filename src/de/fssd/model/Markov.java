@@ -104,7 +104,7 @@ public class Markov implements TimeSeries {
         // TODO apply function to initial probabilities (rates)? (see: https://en.wikipedia.org/wiki/Uniformization_(probability_theory))
 
         addCurrentVectorToSeries();
-        coputeTimeseries();
+        computeTimeseries();
     }
 
     private void addCurrentVectorToSeries() {
@@ -115,7 +115,7 @@ public class Markov implements TimeSeries {
         }
     }
 
-    private void coputeTimeseries() {
+    private void computeTimeseries() {
         for (int i = 1; i < getSamplePointsCount(); i++) {
             RealVector nextVector = transitionMatrix.preMultiply(currentVector); // TODO is preMultiply correct?
 
