@@ -16,6 +16,7 @@ public class BDDNode {
     private final BDDNode highChild;
     private final BDDNode lowChild;
     private @NotNull List<BDDNode> parent;
+    private final boolean isStateDependend;
 
     /**
      * Use to wrap a {@link BDD} for a more programmer friendly NAVIGATION through the bdd AFTER having build it.
@@ -27,17 +28,18 @@ public class BDDNode {
      * @param bdd the bdd
      * @param nodeID the root node
      */
-    public BDDNode(BDD bdd, int nodeID) {
+    public BDDNode(BDD bdd, StateDependencies stateDependencies, int nodeID) {
         this.bdd = bdd;
         this.nodeID = nodeID;
         this.varID = bdd.getVar(nodeID);
 
         this.parent = new LinkedList<>();
+        isStateDependend = false; //TODO information can be retrieved by stateDependencies!?
 
         if(hasChild()) {
-            highChild = new BDDNode(bdd, bdd.getHigh(nodeID));
+            highChild = new BDDNode(bdd, stateDependencies, bdd.getHigh(nodeID));
             highChild.parent.add(this);
-            lowChild = new BDDNode(bdd, bdd.getLow(nodeID));
+            lowChild = new BDDNode(bdd, stateDependencies, bdd.getLow(nodeID));
             lowChild.parent.add(this);
         } else {
             highChild = null;
@@ -46,6 +48,14 @@ public class BDDNode {
     }
 
     public BDD getBDD() { return bdd; }
+
+    /**
+     * Returns true iff corresponding state of current node depends on state of child nodes
+     * @return true if s dependent to child nodes
+     */
+    public boolean isStateDependent() {
+        return isStateDependend;
+    }
 
     public int getNodeID() {
         return nodeID;

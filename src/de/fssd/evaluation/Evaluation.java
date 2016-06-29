@@ -2,7 +2,7 @@ package de.fssd.evaluation;
 
 import com.codepoetics.protonpack.StreamUtils;
 import com.codepoetics.protonpack.functions.TriFunction;
-import com.sun.istack.internal.Nullable;
+import com.sun.istack.internal.NotNull;
 import de.fssd.model.BDDNode;
 import de.fssd.model.TimeSeries;
 
@@ -18,57 +18,26 @@ import java.util.stream.Stream;
 public class Evaluation {
 
     private static Supplier<Float> ones = () -> 1f;
+    private static Supplier<Float> zeros = () -> 0f;
 
     private TimeSeries timeSeries;
-    private Map<BDDNode, Stream<Float>> computedTable;
+    private Map<BDDNode, List<Float>> computedTable;
 
     public Evaluation (TimeSeries timeSeries) {
         this.timeSeries = timeSeries;
     }
 
-    public List<Float> evaluateWithRootNode(BDDNode rootNode) {
-        if(!rootNode.isRoot()) {
-            throw new AssertionError("Not the root node");
-        } else if(rootNode.isOne()) {
-            return Collections.nCopies(timeSeries.getSamplePointsCount(), 1f);
-        }
-        Stream<Float> result = constructFormulaTopDown(rootNode);
-        if(result != null) {
-            return result.collect(Collectors.toList());
-        } else {
-            return Collections.nCopies(timeSeries.getSamplePointsCount(), 0f);
-        }
-    }
-
-
-    /**
-     * Constructs the formula top down.
-     * @param node the root node
-     * @return formula encoded in stream, null if coming from zero node
-     */
-    private @Nullable Stream<Float> constructFormulaTopDown(BDDNode node) {
-        if(node.isZero()) {
-            return null;
-        } else if(node.isOne()) {
-            return Stream.generate(ones);
-        } else {
-            return constructFormulaFromChild(node);
-        }
-    }
 
     public List<Float> evaluateWithRootNodeAndComputedTable(BDDNode rootNode) {
         if(!rootNode.isRoot()) {
             throw new AssertionError("Not the root node");
         } else if(rootNode.isOne()) {
             return Collections.nCopies(timeSeries.getSamplePointsCount(), 1f);
-        }
-        computedTable = new HashMap<>();
-        Stream<Float> result = constructFormulaTopDownWithComputedTable(rootNode);
-        if(result != null) {
-            return result.collect(Collectors.toList());
-        } else {
+        } else if(rootNode.isZero()) {
             return Collections.nCopies(timeSeries.getSamplePointsCount(), 0f);
         }
+        computedTable = new HashMap<>();
+        return constructFormulaTopDownWithComputedTable(rootNode).collect(Collectors.toList());
     }
 
     /**
@@ -76,80 +45,57 @@ public class Evaluation {
      * @param node the root node
      * @return formula encoded in stream, null if coming from zero node
      */
-    private @Nullable Stream<Float> constructFormulaTopDownWithComputedTable(BDDNode node) {
+    private @NotNull Stream<Float> constructFormulaTopDownWithComputedTable(BDDNode node) {
         if(node.isZero()) {
-            return null;
+            return Stream.generate(zeros);
         } else if(node.isOne()) {
             return Stream.generate(ones);
         } else if(computedTable.containsKey(node)) {
-            return computedTable.get(node);
+            return computedTable.get(node).stream();
         } else {
-            return constructFormulaFromChild(node);
+            List<Float> result = formulaFromChildes(node).collect(Collectors.toList());
+            computedTable.put(node, result);
+            return result.stream();
         }
     }
 
-    private @Nullable Stream<Float> constructFormulaFromChild(BDDNode node) {
+    private @NotNull Stream<Float> formulaFromChildes(BDDNode node) {
         final Stream<Float> current = timeSeries.getProbabilitySeries(node.getVarID());
 
-        final Stream<Float> low = constructFormulaTopDown(node.getLowChild());
-        final Stream<Float> high = constructFormulaTopDown(node.getHighChild());
+        // variable names correspond to formula in "BDD Evaluation with Restricted Variables" (page 2 at top)
+        final Stream<Float> g2 = constructFormulaTopDownWithComputedTable(node.getLowChild());
+        final Stream<Float> g1_x1 = getHigh(node);
 
-        if(low == null && high == null) {
-            return null;
+        // formula in zip correspond to formula in "BDD Evaluation with Restricted Variables" (page 2 at top)
+        if(node.isStateDependent()) {
+            final Stream<Float> h2_x1 = getDependentLow(node);
+            Stream<Float> diff = zip(g1_x1, h2_x1, (G1, H2) -> G1 - H2);
+            return zip(current, g2, diff, (X, G2, Diff) -> G2 + X * Diff);
         } else {
-            final Stream<Float> result;
+            return zip(current, g2, g1_x1, (X, G2, G1) -> G2 + X * (G1 - G2));
+        }
+    }
 
-            if(high == null) {
-                result = zip(current, low, (c, l) -> (1-l) * c);
-            } else if(low == null) {
-                result = zip(current, high, (c, h) -> c * h);
-            } else {
-                result = zip(current, low, high, (c, l, h) -> ((1-c) * l) + (c * h));
+    private @NotNull Stream<Float> getHigh(BDDNode node) {
+        if (node.isStateDependent()) {
+            BDDNode high = node.getHighChild();
+            while (high.isStateDependent() && high.hasChild()) {
+                high = high.getLowChild();
             }
-
-            return result;
+            return constructFormulaTopDownWithComputedTable(high.getLowChild());
+        } else {
+            return constructFormulaTopDownWithComputedTable(node.getHighChild());
         }
     }
 
-/* TODO revise
-    public List<Float> evaluateWithOneNode(BDDNode oneNode) {
-        if(!oneNode.isOne()) {
-            throw new AssertionError("Not one node");
-        } else if(oneNode.isRoot()) {
-            return Collections.nCopies(timeSeries.getSamplePointsCount(), 0f);
-        } else {
-            return constructFormulaBottomUp(oneNode).collect(Collectors.toList());
+    private @NotNull Stream<Float> getDependentLow(BDDNode node) {
+        assert node.isStateDependent();
+        BDDNode low = node.getLowChild();
+        while (low.isStateDependent() && low.hasChild()) {
+            low = low.getLowChild();
         }
+        return constructFormulaTopDownWithComputedTable(low.getLowChild());
     }
-
-    /**
-     * Constructs the formula bottom up.
-     * @param node the one node
-     * @return formula encoded in stream
-     *
-    private Stream<Float> constructFormulaBottomUp(BDDNode node) {
-        final Stream<Float> current;
-        if(node.isOne()) {
-            current = Stream.generate(ones);
-        } else if(node.isZero()) {
-            throw new AssertionError("Zero node is impossible in a proper built bdd (starting at one and recursively " +
-                    "accessing the parents)");
-        } else {
-            current = timeSeries.getProbabilitySeries(node.getVarID());
-        }
-        if(node.isRoot()) {
-            return current;
-        } else {
-            Iterator<BDDNode> parents = node.getParents().iterator();
-            Stream<Float> parentStream = constructFormulaBottomUp(parents.next());
-            while (parents.hasNext()) {
-                Stream<Float> ps = constructFormulaBottomUp(parents.next());
-                parentStream = zip(parentStream, ps, (a, rootNode) -> a + rootNode);
-            }
-            return zip(current, parentStream, (a, rootNode) -> a * rootNode);
-        }
-    }
-*/
 
     private Stream<Float> zip(Stream<Float> aStream, Stream<Float> bStream, BiFunction<Float, Float, Float> op) {
         return StreamUtils.zip(aStream, bStream, op);
