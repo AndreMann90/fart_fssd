@@ -119,7 +119,7 @@ public class BDDBuilder {
             }
         }
 
-        Markov markov = new Markov(faultTree, f, varIDToStateMap);
+        Markov markov = new Markov(faultTree, varIDToStateMap);
         ArrayList<BDDNode> topNodes = new ArrayList<>();
         for (Integer ni: topNodeIds) {
             topNodes.add(new BDDNode(bdd, markov, ni));

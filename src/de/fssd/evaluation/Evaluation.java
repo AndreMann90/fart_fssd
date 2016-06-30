@@ -67,7 +67,7 @@ public class Evaluation {
         final Stream<Float> g1_x1 = getHigh(node);
 
         // formula in zip correspond to formula in "BDD Evaluation with Restricted Variables" (page 2 at top)
-        if(node.isStateDependent()) {
+        if(node.isLowStateDependent()) {
             final Stream<Float> h2_x1 = getDependentLow(node);
             Stream<Float> diff = zip(g1_x1, h2_x1, (G1, H2) -> G1 - H2);
             return zip(current, g2, diff, (X, G2, Diff) -> G2 + X * Diff);
@@ -77,9 +77,9 @@ public class Evaluation {
     }
 
     private @NotNull Stream<Float> getHigh(BDDNode node) {
-        if (node.isStateDependent()) {
+        if (node.isHighStateDependent()) {
             BDDNode high = node.getHighChild();
-            while (high.isStateDependent() && high.hasChild()) {
+            while (high.isLowStateDependent() && high.hasChild()) {
                 high = high.getLowChild();
             }
             return constructFormulaTopDownWithComputedTable(high.getLowChild());
@@ -89,9 +89,9 @@ public class Evaluation {
     }
 
     private @NotNull Stream<Float> getDependentLow(BDDNode node) {
-        assert node.isStateDependent();
+        assert node.isLowStateDependent();
         BDDNode low = node.getLowChild();
-        while (low.isStateDependent() && low.hasChild()) {
+        while (low.isLowStateDependent() && low.hasChild()) {
             low = low.getLowChild();
         }
         return constructFormulaTopDownWithComputedTable(low.getLowChild());

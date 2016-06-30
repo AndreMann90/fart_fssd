@@ -38,7 +38,7 @@ public class EvaluationTest {
         System.out.println(rootNode.getTreeString());
         Evaluation evaluation = new Evaluation(timeSeries);
 
-        testEvaluationMethods("RAID", evaluation, rootNode, timeSeries.getRemainingResultPerID("g16"));
+        testEvaluationMethods("HTF", evaluation, rootNode, timeSeries.getRemainingResultPerID("g16"));
     }
 
     @Test
