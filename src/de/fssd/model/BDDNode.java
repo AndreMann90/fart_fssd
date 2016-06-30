@@ -16,7 +16,8 @@ public class BDDNode {
     private final BDDNode highChild;
     private final BDDNode lowChild;
     private @NotNull List<BDDNode> parent;
-    private final boolean isStateDependend;
+    private final boolean isLowStateDependent;
+    private final boolean isHighStateDependent;
 
     /**
      * Use to wrap a {@link BDD} for a more programmer friendly NAVIGATION through the bdd AFTER having build it.
@@ -34,27 +35,40 @@ public class BDDNode {
         this.varID = bdd.getVar(nodeID);
 
         this.parent = new LinkedList<>();
-        isStateDependend = false; //TODO information can be retrieved by stateDependencies!?
 
         if(hasChild()) {
             highChild = new BDDNode(bdd, stateDependencies, bdd.getHigh(nodeID));
             highChild.parent.add(this);
+            isHighStateDependent = stateDependencies.areVariableDependent(this.getVarID(), highChild.getVarID());
             lowChild = new BDDNode(bdd, stateDependencies, bdd.getLow(nodeID));
             lowChild.parent.add(this);
+            isLowStateDependent = highChild.getVarID() == lowChild.getVarID()
+                    ? isHighStateDependent
+                    : stateDependencies.areVariableDependent(this.getVarID(), lowChild.getVarID());
         } else {
             highChild = null;
+            isHighStateDependent = false;
             lowChild = null;
+            isLowStateDependent = false;
         }
     }
 
     public BDD getBDD() { return bdd; }
 
     /**
-     * Returns true iff corresponding state of current node depends on state of child nodes
-     * @return true if s dependent to child nodes
+     * Returns true iff corresponding state of current node depends on state of <em>LOW<em/> child node
+     * @return true if s dependent to <em>LOW<em/> child nodes
      */
-    public boolean isStateDependent() {
-        return isStateDependend;
+    public boolean isLowStateDependent() {
+        return isLowStateDependent;
+    }
+
+    /**
+     * Returns true iff corresponding state of current node depends on state of <em>HIGH<em/> child node
+     * @return true if s dependent to <em>HIGH<em/> child nodes
+     */
+    public boolean isHighStateDependent() {
+        return isHighStateDependent;
     }
 
     public int getNodeID() {
@@ -121,8 +135,14 @@ public class BDDNode {
         } else if (isZero()) {
             return "0";
         } else {
-            return "v" + getVarID() + "(" + getNodeID() + "): [" + getLowChild().getTreeString() + ", " +getHighChild().getTreeString() + "]";
+            return "v" + getVarID() + "(" + getNodeID() + "): [" + boolToSign(isLowStateDependent()) +
+                    getLowChild().getTreeString() + ", " + boolToSign(isHighStateDependent()) +
+                    getHighChild().getTreeString() + "]";
         }
+    }
+
+    private String boolToSign(boolean b) {
+        return b ? "+" : "-";
     }
 
     @Override
