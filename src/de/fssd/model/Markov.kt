@@ -59,23 +59,6 @@ class Markov : TimeSeries, StateDependencies {
             }
             System.out.println("Q: " + Q)
             System.out.println("Gamma: " + maxRateGamma)
-//            assert(maxRateGamma > 0 && maxRateGamma <= 1);
-
-            /* TODO: this could be made simpler: P = I + (1/gamma)Q */
-            /*
-            val P = BlockRealMatrix(idim, jdim);
-            for (i in 0..idim - 1) {
-                var v = P.getEntry(i, i);
-                for (j in 0..jdim - 1) {
-                    if (i == j) // These will be calculated later
-                        continue;
-                    val pij = transitionMatrix.getEntry(i, j) / maxRateGamma;
-                    v += pij;
-                    P.setEntry(i, j, pij);
-                }
-                P.setEntry(i, i, 1 - v);
-            }
-            */
 
             val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
             System.out.println(P)
