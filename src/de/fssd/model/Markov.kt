@@ -19,18 +19,93 @@ import java.util.stream.StreamSupport
  * Continuous Markov implementation using uniformization
  */
 class Markov : TimeSeries, StateDependencies {
+    private class Subchain constructor (size: Int) {
+        val size = size
+        val matrix = BlockRealMatrix(size, size)
+        val P0 = ArrayRealVector(size)
+        val varmap = HashMap<Int, McVariable>()
 
-    lateinit private var P0 : RealVector
-    lateinit private var transitionMatrix: BlockRealMatrix
+        private fun addVectorToSeries(vec: RealVector) {
+            for (v in varmap.values) {
+                val index = v.orderInQ;
+                val entry = vec.getEntry(index.toInt());
+                v.timeSeries.add(entry.toFloat());
+            }
+        }
 
-    private var varmap = HashMap<Int, McVariable>();
-    private var sampleCount = 0;
-    private var sampleTime = 0.0f;
+        private fun nfac(n: Int): Double {
+            var rv: Double = 1.0;
+            for (x in 1..n.toInt())
+                rv *= x;
+            return rv;
+        }
 
-    public class MarkovException : RuntimeException {
-        constructor(message: String): super(message) {
+        fun uniform(sampleCount: Int) {
+            // https://en.wikipedia.org/wiki/Uniformization_(probability_theory)
+            var nmax = 1000;
+            var maxRateGamma = 0.0;
+
+            var Q = matrix.copy()
+            System.out.println("Transition rate matrix: " + Q)
+
+            for (i in 0..size - 1) {
+                Q.setEntry(i, i, 0.0)
+                var qii = 0.0
+                for (v in Q.getRow(i))
+                    qii += v
+                Q.setEntry(i, i, -qii)
+                maxRateGamma = Math.max(maxRateGamma, qii)
+                assert(0 <= qii && qii < Double.POSITIVE_INFINITY)
+            }
+            System.out.println("Q: " + Q)
+            System.out.println("Gamma: " + maxRateGamma)
+//            assert(maxRateGamma > 0 && maxRateGamma <= 1);
+
+            /* TODO: this could be made simpler: P = I + (1/gamma)Q */
+            /*
+            val P = BlockRealMatrix(idim, jdim);
+            for (i in 0..idim - 1) {
+                var v = P.getEntry(i, i);
+                for (j in 0..jdim - 1) {
+                    if (i == j) // These will be calculated later
+                        continue;
+                    val pij = transitionMatrix.getEntry(i, j) / maxRateGamma;
+                    v += pij;
+                    P.setEntry(i, j, pij);
+                }
+                P.setEntry(i, i, 1 - v);
+            }
+            */
+
+            val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
+            System.out.println(P)
+
+            addVectorToSeries(P0)
+            for (t in 1..sampleCount) {
+                var pt = ArrayRealVector(size, 0.0);
+                for (n in 0..nmax) {
+                    val f1 = Math.pow(maxRateGamma * t, n.toDouble())
+                    val f2 = nfac(n);
+                    if (f2 == Double.POSITIVE_INFINITY)
+                        break
+                    pt = pt.add(P.power(n).preMultiply(P0).mapMultiply((f1 / f2) * Math.exp(- maxRateGamma * t)));
+                }
+                for (idx in 0..pt.dimension-1) {
+                    val v = pt.getEntry(idx);
+                    assert(v >= 0.0);
+                    assert(v <= 1.0);
+                }
+                addVectorToSeries(pt);
+            }
         }
     }
+
+    private var sampleCount = 0;
+    private var sampleTime = 0.0f;
+    private var stateToChain = HashMap<MCState, Subchain>()
+    private val chains = ArrayList<Subchain>()
+
+    class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
 
     /**
      * Represents the Variable for a MC state
@@ -48,111 +123,60 @@ class Markov : TimeSeries, StateDependencies {
         }
     }
 
-    constructor (t: FaultTree, varIDToStateMap: Map<Int, MCState>) { // throws MarkovException {
-        sampleCount = t.sampleCount
-        sampleTime = t.missionTime / (sampleCount - 1)
-
-        val stateCount = t.chain.size
-
-        val identity = BlockRealMatrix(stateCount, stateCount);
-
-        P0 = ArrayRealVector(stateCount);
-        transitionMatrix = BlockRealMatrix(stateCount, stateCount);
-        val nameIdToVarIdMap = HashMap<String, Int>(); // maps the name of sate in file to varId of state given by BDD
+    constructor (tree: FaultTree, f: MCComponentFinder, varIDToStateMap: Map<Int, MCState>) {
+        sampleCount = tree.sampleCount
+        sampleTime = tree.missionTime / (sampleCount - 1)
 
         // manage mapping of varID that was defined by the bdd library and init the initial probability
-        var orderInQ = 0;
+        val nameIdToVarIdMap = HashMap<String, Int>(); // maps the name of sate in file to varId of state given by BDD
         for (varID in varIDToStateMap.keys) {
-            val mcState = varIDToStateMap.get(varID) ?: throw MarkovException("Unknown variable ${varID}")
+            val mcState = varIDToStateMap.get(varID) ?: throw MarkovException("Unknown variable $varID")
 
-            varmap.put(varID, McVariable(orderInQ))
             nameIdToVarIdMap.put(mcState.id, varID);
-
-            P0.setEntry(orderInQ, mcState.p0.toDouble())
-            identity.setEntry(orderInQ, orderInQ, 1.0);
-            orderInQ++;
         }
 
         // fill the matrix and find the maximum entry of this matrix
-        for (varID in varIDToStateMap.keys) {
-            val fromOrderId = varmap.get(varID)?.orderInQ?.toInt() ?: throw MarkovException("Unknown variable " + varID)
-            val mcState = varIDToStateMap.get(varID) ?: throw MarkovException("Unknown variable " + varID);
+        for (s in f.sets) {
+            var chain = Subchain(s.size)
+            chains.add(chain)
 
-            var residual = 1.0;
-            for (tr in mcState.transitions) {
-                val toVarId = nameIdToVarIdMap.get(tr.state)
-                val rate = tr.p
-                val toOrderId = varmap.get(toVarId)?.orderInQ?.toInt() ?: throw MarkovException("Invalid target variable ID")
-                // TODO transpose? (change from <-> to)
-                transitionMatrix.setEntry(fromOrderId, toOrderId, rate.toDouble())
-                residual -= rate
+            var orderInQ = 0;
+            for (mcs in s) {
+                stateToChain[mcs] = chain
+                val fromId = nameIdToVarIdMap[mcs.id] ?: throw MarkovException("Invalid MC State ID ${mcs.id}")
+                chain.varmap[fromId] = McVariable(orderInQ)
+                orderInQ++
             }
-            if ((residual < 0) || (residual > 1)) {
-                /* Weird things happened */
-                throw MarkovException("Invalid state transition from state: " + mcState.getId());
+
+            for (mcs in s) {
+                val fromVarId = nameIdToVarIdMap[mcs.id] ?: throw MarkovException("Invalid MC State ID ${mcs.id}")
+                val fromOrderId = chain.varmap[fromVarId]?.orderInQ ?: throw MarkovException("Invalid source variable ID $fromVarId")
+                chain.P0.setEntry(fromOrderId, mcs.p0.toDouble())
+                var residual = 1.0
+
+                for (tr in mcs.transitions) {
+                    val toVarId = nameIdToVarIdMap[tr.state]
+                    val toOrderId = chain.varmap[toVarId]?.orderInQ?.toInt() ?: throw MarkovException("Invalid target variable ID $toVarId")
+
+                    val rate = tr.p
+                    chain.matrix.setEntry(fromOrderId, toOrderId, rate.toDouble())
+                    residual -= rate
+                }
+                if ((residual < 0) || (residual > 1)) {
+                    /* Weird things happened */
+                    throw MarkovException("Invalid state transition from state: " + mcs.id)
+                }
+
+                chain.matrix.setEntry(fromOrderId, fromOrderId, residual);
             }
-            System.out.println("Residual state probability: " + residual);
-            transitionMatrix.setEntry(fromOrderId, fromOrderId, residual);
         }
 
         uniformization();
     }
 
-    private fun addVectorToSeries(vec: RealVector) {
-        for (v in varmap.values) {
-            val index = v.orderInQ;
-            val entry = vec.getEntry(index.toInt());
-            v.timeSeries.add(entry.toFloat());
-        }
-    }
-
-    private fun nfac(n: Int): Double {
-        var rv: Double = 1.0;
-        for (x in 1..n.toInt())
-            rv *= x;
-        return rv;
-    }
-
     private fun uniformization() {
-        // https://en.wikipedia.org/wiki/Uniformization_(probability_theory)
-        var idim = transitionMatrix.getRowDimension();
-        var jdim = transitionMatrix.getColumnDimension();
-        assert(idim == jdim);
-        var nmax = 1000;
-        var maxRateGamma = 0.0;
-
-        for (i in 0..idim - 1)
-            maxRateGamma = Math.max(maxRateGamma, transitionMatrix.getEntry(i, i));
-
-        assert(maxRateGamma > 0 && maxRateGamma <= 1);
-
-        /* TODO: this could be made simpler: P = I + (1/gamma)Q */
-        val P = BlockRealMatrix(idim, jdim);
-        for (i in 0..idim - 1) {
-            var v = P.getEntry(i, i);
-            for (j in 0..jdim - 1) {
-                if (i == j) // These will be calculated later
-                    continue;
-                val pij = transitionMatrix.getEntry(i, j) / maxRateGamma;
-                v += pij;
-                P.setEntry(i, j, pij);
-            }
-            P.setEntry(i, i, 1 - v);
-        }
-
-        addVectorToSeries(P0);
-        for (t in 1..sampleCount.toInt()) {
-            var pt = ArrayRealVector(idim, 0.0);
-            for (n in 0..nmax) {
-                val f1 = Math.pow(maxRateGamma * t, n.toDouble()) / nfac(n);
-                pt = pt.add(P.power(n).preMultiply(P0).mapMultiply(f1 * Math.exp(- maxRateGamma * t)));
-            }
-            for (idx in 0..pt.dimension-1) {
-                val v = pt.getEntry(idx);
-                assert(v >= 0.0);
-                assert(v <= 1.0);
-            }
-            addVectorToSeries(pt);
+        for (c in chains) {
+            c.uniform(sampleCount)
         }
     }
 
@@ -174,18 +198,25 @@ class Markov : TimeSeries, StateDependencies {
      * @return timeseries
      */
     override fun getProbabilitySeries(varID: Int): Stream<Float> {
-        if(!varmap.containsKey(varID)) {
+        val vm = HashMap<Int, McVariable>()
+        for (c in chains) {
+            for (k in c.varmap.keys) {
+                vm[k] = c.varmap[k] ?: throw MarkovException("Unkown variable $k")
+            }
+        }
+
+        if(!vm.containsKey(varID)) {
             throw MarkovException("Invalid varId");
         }
 
-        val s = (varmap[varID]?.timeSeries) ?: throw MarkovException("Invalid varid: $varID")
+        val s = (vm[varID]?.timeSeries) ?: throw MarkovException("Invalid varid: $varID")
         val i = Spliterators.spliterator(s, 0)
         val x = StreamSupport.stream(i, false)
         return x
     }
 
     private fun getVarIDs(): Collection<Int> {
-        return varmap.keys;
+        return chains.fold(ArrayList<Int>(), {S, C -> S.union(C.varmap.keys); S})
     }
 
     override fun areVariableDependent(varID1: Int, varID2: Int): Boolean {
@@ -203,7 +234,7 @@ class Markov : TimeSeries, StateDependencies {
         return true;
     }
 
-    override public fun toString(): String {
-        return "Markov{sampleCount=$sampleCount, sampleTime=$sampleTime, timeseries=$varmap}"
+    override fun toString(): String {
+        return "Markov{sampleCount=$sampleCount, sampleTime=$sampleTime, subchains=$chains}"
     }
 }
