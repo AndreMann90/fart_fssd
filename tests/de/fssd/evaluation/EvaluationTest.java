@@ -67,11 +67,11 @@ public class EvaluationTest {
             }
 
             @Override
-            public Stream<Float> getProbabilitySeries(int varID) {
+            public List<Float> getProbabilitySeries(int varID) {
                 if(varID == bdd.getVar(a)) {
-                    return Arrays.asList(0.0f, 0.25f, 1f).stream();
+                    return Arrays.asList(0.0f, 0.25f, 1f);
                 } else if(varID == bdd.getVar(b)) {
-                    return Arrays.asList(0.0f, 0.5f, 1f).stream();
+                    return Arrays.asList(0.0f, 0.5f, 1f);
                 } else {
                     return null;
                 }
@@ -95,9 +95,9 @@ public class EvaluationTest {
             }
 
             @Override
-            public Stream<Float> getProbabilitySeries(int varID) {
+            public List<Float> getProbabilitySeries(int varID) {
                 if(varID == bdd.getVar(top)) {
-                    return Arrays.asList(0.0f, 0.25f, 1f).stream();
+                    return Arrays.asList(0.0f, 0.25f, 1f);
                 } else {
                     return null;
                 }

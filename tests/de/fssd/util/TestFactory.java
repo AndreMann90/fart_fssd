@@ -46,13 +46,13 @@ public class TestFactory {
             }
 
             @Override
-            public Stream<Float> getProbabilitySeries(int varID) {
+            public List<Float> getProbabilitySeries(int varID) {
                 if (varID == aVar) {
-                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH).stream();
+                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH);
                 } else if (varID == bVar) {
-                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH).stream();
+                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH);
                 } else if (varID == cVar) {
-                    return makeStreamForTest(0.1f, RAID_TEST_LENGTH).stream();
+                    return makeStreamForTest(0.1f, RAID_TEST_LENGTH);
                 } else {
                     return null;
                 }

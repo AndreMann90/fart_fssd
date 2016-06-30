@@ -77,8 +77,8 @@ public class TimeSeriesFromCSV implements TimeSeries {
     }
 
     @Override
-    public Stream<Float> getProbabilitySeries(int varID) {
-        return varIdToSeriesMap.get(varID).stream();
+    public List<Float> getProbabilitySeries(int varID) {
+        return varIdToSeriesMap.get(varID);
     }
 
     public List<Float> getRemainingResultPerID(String gateID) {
