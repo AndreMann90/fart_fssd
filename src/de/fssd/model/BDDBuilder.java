@@ -73,12 +73,17 @@ public class BDDBuilder {
 
         BDD bdd = new BDD(1000);
 
+        MCComponentFinder f = new MCComponentFinder(faultTree);
         Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
         Map<Integer, MCState> varIDToStateMap = new HashMap<>();
-        for (MCState s: faultTree.getChain()) {
-            int var = bdd.ref(bdd.createVar());
-            stateToNodeIDMap.put(s, var);
-            varIDToStateMap.put(bdd.getVar(var), s);
+
+        for (Set<MCState> set: f.getSets()) {
+            for (MCState s: set) {
+                int var = bdd.ref(bdd.createVar());
+                stateToNodeIDMap.put(s, var);
+                varIDToStateMap.put(bdd.getVar(var), s);
+            }
+
         }
 
         Map<FaultTreeNode, Integer> bddnodes = new HashMap<>();
@@ -114,7 +119,7 @@ public class BDDBuilder {
             }
         }
 
-        Markov markov = new Markov(faultTree, varIDToStateMap);
+        Markov markov = new Markov(faultTree, f, varIDToStateMap);
         ArrayList<BDDNode> topNodes = new ArrayList<>();
         for (Integer ni: topNodeIds) {
             topNodes.add(new BDDNode(bdd, markov, ni));
