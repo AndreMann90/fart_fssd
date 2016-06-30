@@ -1,9 +1,5 @@
 package de.fssd.model
 
-/**
- * Created by gbe on 6/29/16.
- */
-
 import de.fssd.dataobjects.FaultTree;
 import de.fssd.dataobjects.MCState;
 import org.apache.commons.math3.linear.*;
@@ -35,9 +31,13 @@ class Markov : TimeSeries, StateDependencies {
 
         private fun nfac(n: Int): Double {
             var rv: Double = 1.0;
-            for (x in 1..n.toInt())
+            for (x in 1..n)
                 rv *= x;
             return rv;
+        }
+
+        override fun toString(): String {
+            return "Subchain{ size=$size, P0=$P0, timeseries=${varmap.values} }"
         }
 
         fun uniform(sampleCount: Int) {
@@ -46,8 +46,6 @@ class Markov : TimeSeries, StateDependencies {
             var maxRateGamma = 0.0;
 
             var Q = matrix.copy()
-            System.out.println("Transition rate matrix: " + Q)
-
             for (i in 0..size - 1) {
                 Q.setEntry(i, i, 0.0)
                 var qii = 0.0
@@ -57,21 +55,28 @@ class Markov : TimeSeries, StateDependencies {
                 maxRateGamma = Math.max(maxRateGamma, qii)
                 assert(0 <= qii && qii < Double.POSITIVE_INFINITY)
             }
-            System.out.println("Q: " + Q)
-            System.out.println("Gamma: " + maxRateGamma)
+            System.out.println("γ: " + maxRateGamma)
 
             val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
-            System.out.println(P)
+
+            val powers = ArrayList<RealVector>();
+            for (n in 0..nmax) {
+                powers.add(P.power(n).preMultiply(P0))
+            }
 
             addVectorToSeries(P0)
             for (t in 1..sampleCount) {
                 var pt = ArrayRealVector(size, 0.0);
                 for (n in 0..nmax) {
-                    val f1 = Math.pow(maxRateGamma * t, n.toDouble())
-                    val f2 = nfac(n);
-                    if (f2 == Double.POSITIVE_INFINITY)
+                    val f1 = nfac(n);
+                    if (f1 == Double.POSITIVE_INFINITY) // TODO: use bignum instead of a Double
                         break
-                    pt = pt.add(P.power(n).preMultiply(P0).mapMultiply((f1 / f2) * Math.exp(- maxRateGamma * t)));
+                    val f2 = Math.pow(maxRateGamma * t, n.toDouble())
+                    if (f2 / f1 < Math.ulp(0.0)) { // This term and all after it are below machine epsilon
+                        System.out.println("Value below machine ε reached for n=$n, n!=$f1, t=$t")
+                        break
+                    }
+                    pt = pt.add(powers[n].mapMultiply((f2 / f1) * Math.exp(- maxRateGamma * t)));
                 }
                 for (idx in 0..pt.dimension-1) {
                     val v = pt.getEntry(idx);
@@ -83,16 +88,8 @@ class Markov : TimeSeries, StateDependencies {
         }
     }
 
-    private var sampleCount = 0;
-    private var sampleTime = 0.0f;
-    private var stateToChain = HashMap<MCState, Subchain>()
-    private val chains = ArrayList<Subchain>()
-
     class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
 
-    /**
-     * Represents the Variable for a MC state
-     */
     private class McVariable {
         val timeSeries = java.util.ArrayList<Float>();
         var orderInQ : Int = 0; // ordering in generator matrix Q
@@ -106,9 +103,12 @@ class Markov : TimeSeries, StateDependencies {
         }
     }
 
+    private var sampleCount = 0;
+    private var stateToChain = HashMap<MCState, Subchain>()
+    private val chains = ArrayList<Subchain>()
+
     constructor (tree: FaultTree, f: MCComponentFinder, varIDToStateMap: Map<Int, MCState>) {
         sampleCount = tree.sampleCount
-        sampleTime = tree.missionTime / (sampleCount - 1)
 
         // manage mapping of varID that was defined by the bdd library and init the initial probability
         val nameIdToVarIdMap = HashMap<String, Int>(); // maps the name of sate in file to varId of state given by BDD
@@ -118,7 +118,6 @@ class Markov : TimeSeries, StateDependencies {
             nameIdToVarIdMap.put(mcState.id, varID);
         }
 
-        // fill the matrix and find the maximum entry of this matrix
         for (s in f.sets) {
             var chain = Subchain(s.size)
             chains.add(chain)
@@ -167,12 +166,8 @@ class Markov : TimeSeries, StateDependencies {
      * Returns the number of timestamps in the series
      * @return number of timestamps
      */
-    override public fun getSamplePointsCount(): Int {
+    override fun getSamplePointsCount(): Int {
         return sampleCount.toInt();
-    }
-
-    public fun getSampleTime(): Float {
-        return sampleTime;
     }
 
     /**
@@ -203,7 +198,9 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     override fun areVariableDependent(varID1: Int, varID2: Int): Boolean {
-        throw UnsupportedOperationException() //TODO
+        return stateToChain.filter({ E ->
+            val k = E.value.varmap.keys
+            k.contains(varID1) || k.contains(varID2)}).size == 1
     }
 
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
@@ -218,6 +215,6 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     override fun toString(): String {
-        return "Markov{sampleCount=$sampleCount, sampleTime=$sampleTime, subchains=$chains}"
+        return "Markov{sampleCount=$sampleCount, subchains=$chains}"
     }
 }
