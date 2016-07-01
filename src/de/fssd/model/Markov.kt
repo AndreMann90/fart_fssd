@@ -170,7 +170,7 @@ class Markov : TimeSeries, StateDependencies {
      * @param varID variable id
      * @return timeseries
      */
-    override fun getProbabilitySeries(varID: Int): List<Float> {
+    override fun getProbabilitySeries(varID: Int): List<Float>? {
         val vm = HashMap<Int, McVariable>()
         for (c in chains) {
             for (k in c.varmap.keys) {
@@ -197,7 +197,8 @@ class Markov : TimeSeries, StateDependencies {
         for (varID in getVarIDs()) {
             val thisSeries = getProbabilitySeries(varID.toInt());
             val otherSeries = timeSeries.getProbabilitySeries(varID.toInt());
-            if(!thisSeries.equals(otherSeries)) {
+            val equal = thisSeries?.equals(otherSeries) ?: (otherSeries == null)
+            if(!equal) {
                 return false;
             }
         }

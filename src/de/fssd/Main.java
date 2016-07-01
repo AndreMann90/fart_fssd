@@ -18,8 +18,8 @@ public class Main {
             Parser parser = new Parser();
             FaultTree faultTree = parser.parse(new File("testcases/HFTTestCase.json"));
             BDDBuildResult result = new BDDBuilder().build(faultTree);
-            Evaluation evaluation = new Evaluation(result.markov);
-            for (BDDNode rn: result.rootNodes) {
+            Evaluation evaluation = new Evaluation(result.getMarkov());
+            for (BDDNode rn: result.getRootNodes()) {
                 List<Float> topEventSeries = evaluation.evaluateWithRootNodeAndComputedTable(rn);
                 System.out.println("Event series for root node " + rn + ": " + topEventSeries);
             }

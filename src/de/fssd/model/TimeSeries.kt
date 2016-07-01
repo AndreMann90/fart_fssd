@@ -15,5 +15,5 @@ interface TimeSeries {
      * *
      * @return timeseries
      */
-    fun getProbabilitySeries(varID: Int): List<Float>
+    fun getProbabilitySeries(varID: Int): List<Float>?
 }

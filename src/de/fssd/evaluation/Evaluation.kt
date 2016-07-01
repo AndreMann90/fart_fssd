@@ -32,13 +32,13 @@ class Evaluation {
     }
 
     /**
-     * Constructs the formula top down using a comuted table
+     * Constructs the formula top down using a computed table
      * @param node the root node
      * *
-     * @return formula encoded in stream, null if coming from zero node
+     * @return formula encoded in a sequence
      */
-    private fun constructFormulaTopDownWithComputedTable(node: BDDNode): Sequence<Float> {
-        if (node.isZero) {
+    private fun constructFormulaTopDownWithComputedTable(node: BDDNode?): Sequence<Float> {
+        if (node == null || node.isZero) {
             return generateSequence(zeros)
         } else if (node.isOne) {
             return generateSequence(ones)
@@ -52,13 +52,13 @@ class Evaluation {
     }
 
     private fun formulaFromChildes(node: BDDNode): Sequence<Float> {
-        val current = timeSeries.getProbabilitySeries(node.varID).asSequence()
-
+        // conforms to "BDD Evaluation with Restricted Variables.pdf"
+        val current = node.probabilities.asSequence()
         val g2 = constructFormulaTopDownWithComputedTable(node.lowChild)
         val g1_x1 = getHigh(node)
 
         if (node.isLowStateDependent) {
-            val h2_x1 = getDependentLow(node)
+            val h2_x1 = getIndependentLow(node)
             return zip(g1_x1, g2, h2_x1, current) {g1, g2, h2, x -> g2 + x * (g1 - h2)}
         } else {
             return zip(g1_x1, g2, current) {g1, g2, x -> g2 + x * (g1 - g2)}
@@ -67,9 +67,9 @@ class Evaluation {
 
     private fun getHigh(node: BDDNode): Sequence<Float> {
         if (node.isHighStateDependent) {
-            var high = node.highChild
+            var high = node.highChild!!
             while (high.isLowStateDependent && high.hasChild()) {
-                high = high.lowChild
+                high = high.lowChild!!
             }
             return constructFormulaTopDownWithComputedTable(high.lowChild)
         } else {
@@ -77,11 +77,11 @@ class Evaluation {
         }
     }
 
-    private fun getDependentLow(node: BDDNode): Sequence<Float> {
+    private fun getIndependentLow(node: BDDNode): Sequence<Float> {
         assert(node.isLowStateDependent)
-        var low = node.lowChild
+        var low = node.lowChild!!
         while (low.isLowStateDependent && low.hasChild()) {
-            low = low.lowChild
+            low = low.lowChild!!
         }
         return constructFormulaTopDownWithComputedTable(low.lowChild)
     }
