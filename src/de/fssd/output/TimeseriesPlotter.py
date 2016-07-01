@@ -5,7 +5,7 @@ import csv
 with open("data.csv") as f: # TODO get file location as parameter
     reader = csv.reader(f)
 
-    header = next(reader)[1:] # header without first column (time)
+    header = next(reader)[1:]  # header without first column (time)
     time = []
     series = {}
     for h in header:
@@ -20,7 +20,7 @@ with open("data.csv") as f: # TODO get file location as parameter
         trace = go.Scatter(
             x=time,
             y=series[key],
-            mode='lines+markers',
+            mode='lines',
             name=key
         )
         data.append(trace)
