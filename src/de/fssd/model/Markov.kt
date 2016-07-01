@@ -86,23 +86,10 @@ class Markov : TimeSeries, StateDependencies {
     private var stateToChain = HashMap<MCState, Subchain>()
     private val chains = ArrayList<Subchain>()
 
+    val variables: List<McVariable>
+        get() = chains.asSequence().map { sc -> sc.varmap.values }.fold(mutableListOf(), {res, cur -> res.addAll(cur) })
+
     class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
-
-    /**
-     * Represents the Variable for a MC state
-     */
-    private class McVariable {
-        val timeSeries = java.util.ArrayList<Float>();
-        var orderInQ : Int = 0; // ordering in generator matrix Q
-
-        constructor (orderInQ: Int) {
-            this.orderInQ = orderInQ;
-        }
-
-        override fun toString(): String {
-            return timeSeries.toString();
-        }
-    }
 
     constructor (tree: FaultTree, f: MCComponentFinder, varIDToStateMap: Map<Int, MCState>) {
         samplePointsCount = tree.sampleCount
@@ -125,7 +112,7 @@ class Markov : TimeSeries, StateDependencies {
             for (mcs in s) {
                 stateToChain[mcs] = chain
                 val fromId = nameIdToVarIdMap[mcs.id] ?: throw MarkovException("Invalid MC State ID ${mcs.id}")
-                chain.varmap[fromId] = McVariable(orderInQ)
+                chain.varmap[fromId] = McVariable(orderInQ, mcs.id)
                 orderInQ++
             }
 
@@ -159,10 +146,6 @@ class Markov : TimeSeries, StateDependencies {
         for (c in chains) {
             c.uniform(samplePointsCount)
         }
-    }
-
-    fun getSampleTime(): Float {
-        return sampleTime;
     }
 
     /**
