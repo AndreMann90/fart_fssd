@@ -19,11 +19,11 @@ public class IntegrationTest {
         Parser parser = new Parser();
         FaultTree faultTree = parser.parse(new File("testcases/HFTTestCase.json"));
         BDDBuildResult result = new BDDBuilder().build(faultTree);
-        Evaluation evaluation = new Evaluation(result.markov);
+        Evaluation evaluation = new Evaluation(result.getMarkov());
 
-        assertEquals("Got an unexpected number of BDD root nodes", result.rootNodes.size(), 1);
+        assertEquals("Got an unexpected number of BDD root nodes", result.getRootNodes().size(), 1);
 
-        List<Float> topEventSeries = evaluation.evaluateWithRootNodeAndComputedTable(result.rootNodes.get(0));
+        List<Float> topEventSeries = evaluation.evaluateWithRootNodeAndComputedTable(result.getRootNodes().get(0));
 
         List<Float> expectedTopEventSeries = new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"))
                 .getRemainingResultPerID("g16");

@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -57,26 +56,29 @@ public class EvaluationTest {
         final int a = bdd.ref(bdd.createVar());
         final int b = bdd.ref(bdd.createVar());
         final int top = bdd.ref(bdd.and(a, b));
-        BDDNode rootNode = new BDDNode(bdd, NoStateDependencies.INSTANCE, top);
-        System.out.println(rootNode.getTreeString());
 
-        Evaluation evaluation = new Evaluation(new TimeSeries() {
+        final TimeSeries timeSeries = new TimeSeries() {
             @Override
             public int getSamplePointsCount() {
                 return 3;
             }
 
             @Override
-            public Stream<Float> getProbabilitySeries(int varID) {
+            public List<Float> getProbabilitySeries(int varID) {
                 if(varID == bdd.getVar(a)) {
-                    return Arrays.asList(0.0f, 0.25f, 1f).stream();
+                    return Arrays.asList(0.0f, 0.25f, 1f);
                 } else if(varID == bdd.getVar(b)) {
-                    return Arrays.asList(0.0f, 0.5f, 1f).stream();
+                    return Arrays.asList(0.0f, 0.5f, 1f);
                 } else {
                     return null;
                 }
             }
-        });
+        };
+
+        BDDNode rootNode = new BDDNode(bdd, timeSeries, NoStateDependencies.INSTANCE, top);
+        System.out.println(rootNode.getTreeString());
+
+        Evaluation evaluation = new Evaluation(timeSeries);
 
         testEvaluationMethods("And", evaluation, rootNode, Arrays.asList(0f, 0.125f, 1f));
     }
@@ -85,24 +87,27 @@ public class EvaluationTest {
     public void evaluateWithRootNode_OneVar() throws Exception {
         final BDD bdd = new BDD(10);
         final int top = bdd.ref(bdd.createVar());
-        BDDNode rootNode = new BDDNode(bdd, NoStateDependencies.INSTANCE, top);
-        System.out.println(rootNode.getTreeString());
 
-        Evaluation evaluation = new Evaluation(new TimeSeries() {
+        final TimeSeries timeSeries = new TimeSeries() {
             @Override
             public int getSamplePointsCount() {
                 return 3;
             }
 
             @Override
-            public Stream<Float> getProbabilitySeries(int varID) {
+            public List<Float> getProbabilitySeries(int varID) {
                 if(varID == bdd.getVar(top)) {
-                    return Arrays.asList(0.0f, 0.25f, 1f).stream();
+                    return Arrays.asList(0.0f, 0.25f, 1f);
                 } else {
                     return null;
                 }
             }
-        });
+        };
+
+        BDDNode rootNode = new BDDNode(bdd, timeSeries, NoStateDependencies.INSTANCE, top);
+        System.out.println(rootNode.getTreeString());
+
+        Evaluation evaluation = new Evaluation(timeSeries);
 
         testEvaluationMethods("OneVar", evaluation, rootNode, Arrays.asList(0f, 0.25f, 1f));
     }

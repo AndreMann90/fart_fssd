@@ -20,7 +20,7 @@ public class MarkovTest {
 
         Pair<BDDNode, TimeSeriesFromCSV> e = TestFactory.getHFTTestCase();
         System.out.println("Expected: " + e.getValue());
-        System.out.println("Actual: " + r.markov);
-        assertTrue("Markovs are not equal", r.markov.equalsToTimeSeries(e.getValue()));
+        System.out.println("Actual: " + r.getMarkov());
+        assertTrue("Markovs are not equal", r.getMarkov().equalsToTimeSeries(e.getValue()));
     }
 }

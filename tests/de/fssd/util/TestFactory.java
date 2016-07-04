@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Created by Andre on 21.06.2016.
@@ -46,20 +45,20 @@ public class TestFactory {
             }
 
             @Override
-            public Stream<Float> getProbabilitySeries(int varID) {
+            public List<Float> getProbabilitySeries(int varID) {
                 if (varID == aVar) {
-                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH).stream();
+                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH);
                 } else if (varID == bVar) {
-                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH).stream();
+                    return makeStreamForTest(0.2f, RAID_TEST_LENGTH);
                 } else if (varID == cVar) {
-                    return makeStreamForTest(0.1f, RAID_TEST_LENGTH).stream();
+                    return makeStreamForTest(0.1f, RAID_TEST_LENGTH);
                 } else {
                     return null;
                 }
             }
         };
 
-        return new Pair<>(new BDDNode(bdd, NoStateDependencies.INSTANCE, top), timeSeries);
+        return new Pair<>(new BDDNode(bdd, timeSeries, NoStateDependencies.INSTANCE, top), timeSeries);
     }
 
     public static List<Float> getRaidTestResult() {
@@ -98,7 +97,7 @@ public class TestFactory {
         int top = bdd.ref(bdd.and(n15, v6));
 
         StateDependenciesBacking s = new StateDependenciesBacking(Arrays.asList(Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3)), Arrays.asList(bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6))));
-
-        return new Pair<>(new BDDNode(bdd, s, top), new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"), Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3), bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6))));
+        TimeSeriesFromCSV timeSeries = new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"), Arrays.asList(bdd.getVar(v1), bdd.getVar(v2), bdd.getVar(v3), bdd.getVar(v4), bdd.getVar(v5), bdd.getVar(v6)));
+        return new Pair<>(new BDDNode(bdd, timeSeries, s, top), timeSeries);
     }
 }

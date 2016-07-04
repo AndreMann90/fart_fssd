@@ -5,16 +5,14 @@ import de.fssd.dataobjects.MCState;
 import org.apache.commons.math3.linear.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.math3.linear.MatrixUtils.createRealIdentityMatrix;
-import java.util.stream.StreamSupport
 
 /**
  * Continuous Markov implementation using uniformization
  */
 class Markov : TimeSeries, StateDependencies {
+
     private class Subchain constructor (size: Int) {
         val size = size
         val matrix = BlockRealMatrix(size, size)
@@ -42,7 +40,7 @@ class Markov : TimeSeries, StateDependencies {
 
         fun uniform(sampleCount: Int) {
             // https://en.wikipedia.org/wiki/Uniformization_(probability_theory)
-            var nmax = 1000;
+            val nmax = 1000;
             var maxRateGamma = 0.0;
 
             var Q = matrix.copy()
@@ -88,45 +86,37 @@ class Markov : TimeSeries, StateDependencies {
         }
     }
 
-    class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
-
-    private class McVariable {
-        val timeSeries = java.util.ArrayList<Float>();
-        var orderInQ : Int = 0; // ordering in generator matrix Q
-
-        constructor (orderInQ: Int) {
-            this.orderInQ = orderInQ;
-        }
-
-        override fun toString(): String {
-            return timeSeries.toString();
-        }
-    }
-
-    private var sampleCount = 0;
+    override val samplePointsCount: Int
+    private var sampleTime = 0.0f;
     private var stateToChain = HashMap<MCState, Subchain>()
     private val chains = ArrayList<Subchain>()
 
+    val variables: List<McVariable>
+        get() = chains.asSequence().map { sc -> sc.varmap.values }.fold(mutableListOf(), {res, cur -> res.addAll(cur) })
+
+    class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
+
     constructor (tree: FaultTree, f: MCComponentFinder, varIDToStateMap: Map<Int, MCState>) {
-        sampleCount = tree.sampleCount
+        samplePointsCount = tree.sampleCount
+        sampleTime = tree.missionTime / (samplePointsCount - 1)
 
         // manage mapping of varID that was defined by the bdd library and init the initial probability
         val nameIdToVarIdMap = HashMap<String, Int>(); // maps the name of sate in file to varId of state given by BDD
         for (varID in varIDToStateMap.keys) {
-            val mcState = varIDToStateMap.get(varID) ?: throw MarkovException("Unknown variable $varID")
+            val mcState = varIDToStateMap[varID] ?: throw MarkovException("Unknown variable $varID")
 
             nameIdToVarIdMap.put(mcState.id, varID);
         }
 
         for (s in f.sets) {
-            var chain = Subchain(s.size)
+            val chain = Subchain(s.size)
             chains.add(chain)
 
             var orderInQ = 0;
             for (mcs in s) {
                 stateToChain[mcs] = chain
                 val fromId = nameIdToVarIdMap[mcs.id] ?: throw MarkovException("Invalid MC State ID ${mcs.id}")
-                chain.varmap[fromId] = McVariable(orderInQ)
+                chain.varmap[fromId] = McVariable(orderInQ, mcs.id)
                 orderInQ++
             }
 
@@ -158,16 +148,8 @@ class Markov : TimeSeries, StateDependencies {
 
     private fun uniformization() {
         for (c in chains) {
-            c.uniform(sampleCount)
+            c.uniform(samplePointsCount)
         }
-    }
-
-    /**
-     * Returns the number of timestamps in the series
-     * @return number of timestamps
-     */
-    override fun getSamplePointsCount(): Int {
-        return sampleCount.toInt();
     }
 
     /**
@@ -175,7 +157,7 @@ class Markov : TimeSeries, StateDependencies {
      * @param varID variable id
      * @return timeseries
      */
-    override fun getProbabilitySeries(varID: Int): Stream<Float> {
+    override fun getProbabilitySeries(varID: Int): List<Float>? {
         val vm = HashMap<Int, McVariable>()
         for (c in chains) {
             for (k in c.varmap.keys) {
@@ -187,10 +169,7 @@ class Markov : TimeSeries, StateDependencies {
             throw MarkovException("Invalid varId");
         }
 
-        val s = (vm[varID]?.timeSeries) ?: throw MarkovException("Invalid varid: $varID")
-        val i = Spliterators.spliterator(s, 0)
-        val x = StreamSupport.stream(i, false)
-        return x
+        return (vm[varID]?.timeSeries) ?: throw MarkovException("Invalid varid: $varID")
     }
 
     private fun getVarIDs(): Collection<Int> {
@@ -205,9 +184,10 @@ class Markov : TimeSeries, StateDependencies {
 
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
         for (varID in getVarIDs()) {
-            val thisSeries = getProbabilitySeries(varID.toInt()).collect(Collectors.toList());
-            val otherSeries = timeSeries.getProbabilitySeries(varID.toInt()).collect(Collectors.toList());
-            if(!thisSeries.equals(otherSeries)) {
+            val thisSeries = getProbabilitySeries(varID.toInt());
+            val otherSeries = timeSeries.getProbabilitySeries(varID.toInt());
+            val equal = thisSeries?.equals(otherSeries) ?: (otherSeries == null)
+            if(!equal) {
                 return false;
             }
         }
@@ -215,6 +195,6 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     override fun toString(): String {
-        return "Markov{sampleCount=$sampleCount, subchains=$chains}"
+        return "Markov{sampleCount=$samplePointsCount, sampleTime=$sampleTime, subchains=$chains}"
     }
 }
