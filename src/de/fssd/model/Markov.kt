@@ -92,7 +92,7 @@ class Markov : TimeSeries, StateDependencies {
     private val chains = ArrayList<Subchain>()
 
     val variables: List<McVariable>
-        get() = chains.asSequence().map { sc -> sc.varmap.values }.fold(mutableListOf(), {res, cur -> res.addAll(cur) })
+        get() = chains.asSequence().map { sc -> sc.varmap.values }.fold(mutableListOf(), {res, cur -> res.addAll(cur); return res })
 
     class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
 
