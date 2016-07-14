@@ -39,7 +39,7 @@ class Markov : TimeSeries, StateDependencies {
             return "Subchain{ size=$size, P0=$P0, timeseries=${varmap.values} }"
         }
 
-        fun uniform(sampleCount: Int) {
+        fun uniform(sampleCount: Int, sampleTime: Float) {
             // https://en.wikipedia.org/wiki/Uniformization_(probability_theory)
             val nmax = 171; /* Our n won't get any higher because n! == Double.Infinity for n >= 171*/
             var maxRateGamma = 0.0;
@@ -54,9 +54,11 @@ class Markov : TimeSeries, StateDependencies {
                 maxRateGamma = Math.max(maxRateGamma, qii)
                 assert(0 <= qii && qii < Double.POSITIVE_INFINITY)
             }
+            System.err.println("Matrix: ${Q}, ${matrix}, ${P0}")
             System.err.println("Subchain γ: " + maxRateGamma)
 
             val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
+            System.err.println("P: ${P}")
 
             val powers = ArrayList<RealVector>();
             for (n in 0..nmax) {
@@ -70,11 +72,11 @@ class Markov : TimeSeries, StateDependencies {
                     val f1 = nfac(n);
                     if (f1 == Double.POSITIVE_INFINITY) // TODO: use bignum instead of a Double
                         break
-                    val f2 = Math.pow(maxRateGamma * t, n.toDouble())
+                    val f2 = Math.pow(maxRateGamma * t * sampleTime, n.toDouble())
                     if (f2 / f1 < Math.ulp(0.0)) { // This term and all after it are below machine epsilon
                         break
                     }
-                    pt = pt.add(powers[n].mapMultiply((f2 / f1) * Math.exp(- maxRateGamma * t)));
+                    pt = pt.add(powers[n].mapMultiply((f2 / f1) * Math.exp(- maxRateGamma * t * sampleTime)));
                 }
                 for (idx in 0..pt.dimension-1) {
                     val v = pt.getEntry(idx);
@@ -160,7 +162,7 @@ class Markov : TimeSeries, StateDependencies {
         val timedelta = measureTimeMillis {
             for (c in chains) {
                 System.err.println("Chain thingy")
-                c.uniform(samplePointsCount)
+                c.uniform(samplePointsCount, sampleTime)
             }
         }
         System.err.println("Markov chain uniformization took $timedelta milliseconds")
@@ -203,11 +205,13 @@ class Markov : TimeSeries, StateDependencies {
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
         println("Vars: ${getVarIDs()}")
         for (varID in getVarIDs()) {
-            println("Bla")
+            println("VarID: $varID")
             val thisSeries = getProbabilitySeries(varID.toInt());
             val otherSeries = timeSeries.getProbabilitySeries(varID.toInt());
             val equal = thisSeries?.equals(otherSeries) ?: (otherSeries == null)
             if(!equal) {
+                println("This: ${thisSeries}")
+                println("Them: ${otherSeries}")
                 return false;
             }
         }
