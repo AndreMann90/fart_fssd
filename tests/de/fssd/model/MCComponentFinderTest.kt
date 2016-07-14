@@ -12,6 +12,6 @@ class MCComponentFinderTest : TestCase() {
 
         val f = MCComponentFinder(t)
 
-        assertEquals("Unexpected number of components", 2, f.sets.size)
+        assertEquals("Unexpected number of components", 2, f.components.size)
     }
 }

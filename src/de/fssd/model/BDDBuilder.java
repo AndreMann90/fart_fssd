@@ -77,7 +77,7 @@ public class BDDBuilder {
         Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
         Map<Integer, MCState> varIDToStateMap = new HashMap<>();
 
-        for (Set<MCState> set: f.getSets()) {
+        for (Set<MCState> set: f.getComponents()) {
             for (MCState s: set) {
                 int var = bdd.ref(bdd.createVar());
                 stateToNodeIDMap.put(s, var);

@@ -4,7 +4,7 @@ import com.sun.istack.internal.NotNull;
 
 import java.util.List;
 
-public class MCState {
+public class MCState implements Comparable {
     private final @NotNull String id;
     private final float p0;
     private final @NotNull List<String> out;
@@ -47,5 +47,23 @@ public class MCState {
     @Override
     public int hashCode() {
         return getId().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "MCState{" +
+                "id='" + id + '\'' +
+                ", p0=" + p0 +
+                ", out=" + out +
+                '}';
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(o instanceof MCState) {
+            return this.id.compareTo(((MCState) o).id);
+        } else {
+            return 0;
+        }
     }
 }

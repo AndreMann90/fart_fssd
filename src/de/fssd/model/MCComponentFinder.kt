@@ -7,9 +7,10 @@ import org.jgrapht.graph.*
 import java.util.*
 
 class MCComponentFinder {
-    lateinit var sets: MutableList<Set<MCState>>
+    val components: MutableList<Set<MCState>>
+
     constructor(t: FaultTree) {
-        val m = HashMap<String, MCState>();
+        val m : MutableMap<String, MCState> = mutableMapOf()
         val g = SimpleGraph<MCState, DefaultEdge>(DefaultEdge::class.java)
 
         for (s in t.chain) {
@@ -23,6 +24,13 @@ class MCComponentFinder {
             }
         }
 
-        sets = ConnectivityInspector<MCState, DefaultEdge>(g).connectedSets()
+        val sets = ConnectivityInspector<MCState, DefaultEdge>(g).connectedSets()
+        components = mutableListOf()
+        for (set in sets) {
+            val sorted : Set<MCState> = set.toSortedSet()
+            components.add(sorted)
+        }
+
+        components.sortBy { el -> if(el.isEmpty()) "" else el.first().id }
     }
 }
