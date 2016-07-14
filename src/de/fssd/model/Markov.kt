@@ -7,6 +7,7 @@ import org.apache.commons.math3.linear.*;
 import java.util.*;
 
 import org.apache.commons.math3.linear.MatrixUtils.createRealIdentityMatrix;
+import kotlin.system.measureTimeMillis
 
 /**
  * Continuous Markov implementation using uniformization
@@ -40,7 +41,7 @@ class Markov : TimeSeries, StateDependencies {
 
         fun uniform(sampleCount: Int) {
             // https://en.wikipedia.org/wiki/Uniformization_(probability_theory)
-            val nmax = 1000;
+            val nmax = 171; /* Our n won't get any higher because n! == Double.Infinity for n >= 171*/
             var maxRateGamma = 0.0;
 
             var Q = matrix.copy()
@@ -53,7 +54,7 @@ class Markov : TimeSeries, StateDependencies {
                 maxRateGamma = Math.max(maxRateGamma, qii)
                 assert(0 <= qii && qii < Double.POSITIVE_INFINITY)
             }
-            System.out.println("γ: " + maxRateGamma)
+            System.err.println("Subchain γ: " + maxRateGamma)
 
             val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
 
@@ -71,7 +72,6 @@ class Markov : TimeSeries, StateDependencies {
                         break
                     val f2 = Math.pow(maxRateGamma * t, n.toDouble())
                     if (f2 / f1 < Math.ulp(0.0)) { // This term and all after it are below machine epsilon
-                        System.out.println("Value below machine ε reached for n=$n, n!=$f1, t=$t")
                         break
                     }
                     pt = pt.add(powers[n].mapMultiply((f2 / f1) * Math.exp(- maxRateGamma * t)));
@@ -147,9 +147,12 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     private fun uniformization() {
-        for (c in chains) {
-            c.uniform(samplePointsCount)
+        val timedelta = measureTimeMillis {
+            for (c in chains) {
+                c.uniform(samplePointsCount)
+            }
         }
+        System.err.println("Markov chain uniformization took $timedelta milliseconds")
     }
 
     /**
