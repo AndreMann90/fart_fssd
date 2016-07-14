@@ -8,8 +8,8 @@ import java.util.*
  * Created by Andre on 30.06.2016.
  */
 class Evaluation {
-    private final val ones = { 1f }
-    private final val zeros = { 0f }
+    private val ones = { 1f }
+    private val zeros = { 0f }
 
     private val timeSeries: TimeSeries
     lateinit var computedTable: MutableMap<BDDNode, List<Float>>
@@ -18,6 +18,10 @@ class Evaluation {
         this.timeSeries = timeSeries
     }
 
+    fun evaluateMultipleRootNodes(rootNodes: List<BDDNode>): Map<BDDNode, List<Float>> {
+        //TODO
+        return mapOf()
+    }
 
     fun evaluateWithRootNodeAndComputedTable(rootNode: BDDNode): List<Float> {
         if (!rootNode.isRoot) {
