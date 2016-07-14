@@ -14,8 +14,7 @@ import kotlin.system.measureTimeMillis
  */
 class Markov : TimeSeries, StateDependencies {
 
-    private class Subchain constructor (size: Int) {
-        val size = size
+    private class Subchain constructor (val size: Int) {
         val matrix = BlockRealMatrix(size, size)
         val P0 = ArrayRealVector(size)
         val varmap = HashMap<Int, McVariable>()
@@ -120,7 +119,7 @@ class Markov : TimeSeries, StateDependencies {
             nameIdToVarIdMap.put(mcState.id, varID);
         }
 
-        for (s in f.sets) {
+        for (s in f.components) {
             val chain = Subchain(s.size)
             chains.add(chain)
 
