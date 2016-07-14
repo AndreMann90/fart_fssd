@@ -53,11 +53,9 @@ class Markov : TimeSeries, StateDependencies {
                 maxRateGamma = Math.max(maxRateGamma, qii)
                 assert(0 <= qii && qii < Double.POSITIVE_INFINITY)
             }
-            System.err.println("Matrix: ${Q}, ${matrix}, ${P0}")
             System.err.println("Subchain γ: " + maxRateGamma)
 
             val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
-            System.err.println("P: ${P}")
 
             val powers = ArrayList<RealVector>();
             for (n in 0..nmax) {
@@ -204,14 +202,13 @@ class Markov : TimeSeries, StateDependencies {
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
         println("Vars: ${getVarIDs()}")
         for (varID in getVarIDs()) {
-            println("VarID: $varID")
-            val thisSeries = getProbabilitySeries(varID.toInt());
-            val otherSeries = timeSeries.getProbabilitySeries(varID.toInt());
-            val equal = thisSeries?.equals(otherSeries) ?: (otherSeries == null)
-            if(!equal) {
-                println("This: ${thisSeries}")
-                println("Them: ${otherSeries}")
-                return false;
+            println("Bla")
+            val thisSeries = getProbabilitySeries(varID.toInt())
+            val otherSeries = timeSeries.getProbabilitySeries(varID.toInt())
+            val inequalEl = thisSeries?.asSequence()?.zip(otherSeries!!.asSequence()) {a, b -> Math.abs(a - b)}?.find { el -> el >= 0.0001 }
+            if(inequalEl != null) {
+                print("inequal Element with diff: $inequalEl")
+                return false
             }
         }
         return true;

@@ -83,7 +83,6 @@ public class BDDBuilder {
                 stateToNodeIDMap.put(s, var);
                 varIDToStateMap.put(bdd.getVar(var), s);
             }
-
         }
 
         Map<FaultTreeNode, Integer> bddnodes = new HashMap<>();
