@@ -3,6 +3,7 @@ package de.fssd.evaluation
 import de.fssd.model.BDDNode
 import de.fssd.model.TimeSeries
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 /**
  * Created by Andre on 30.06.2016.
@@ -19,11 +20,20 @@ class Evaluation {
     }
 
     fun evaluateMultipleRootNodes(rootNodes: List<BDDNode>): Map<BDDNode, List<Float>> {
-        //TODO
-        return mapOf()
+        val results : MutableMap<BDDNode, List<Float>> = mutableMapOf()
+        computedTable = HashMap<BDDNode, List<Float>>()
+        for (rootNode in rootNodes) {
+            results.put(rootNode, evaluateWithOneRootNode(rootNode))
+        }
+        return results
     }
 
     fun evaluateWithRootNodeAndComputedTable(rootNode: BDDNode): List<Float> {
+        computedTable = HashMap<BDDNode, List<Float>>()
+        return evaluateWithOneRootNode(rootNode)
+    }
+
+    private fun evaluateWithOneRootNode(rootNode: BDDNode): List<Float> {
         if (!rootNode.isRoot) {
             throw AssertionError("Not the root node")
         } else if (rootNode.isOne) {
@@ -31,7 +41,6 @@ class Evaluation {
         } else if (rootNode.isZero) {
             return Collections.nCopies(timeSeries.samplePointsCount, 0f)
         }
-        computedTable = HashMap<BDDNode, List<Float>>()
         return constructFormulaTopDownWithComputedTable(rootNode).toList()
     }
 

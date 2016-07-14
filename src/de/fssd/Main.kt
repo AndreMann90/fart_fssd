@@ -18,9 +18,9 @@ object Main {
                 val faultTree = parser.parse(File(file_location))
                 val result = BDDBuilder().build(faultTree)
                 val evaluation = Evaluation(result.markov)
-                for (rn in result.rootNodes) {
-                    val topEventSeries = evaluation.evaluateWithRootNodeAndComputedTable(rn)
-                    println("Event series for root node $rn: $topEventSeries")
+                val topEventResults = evaluation.evaluateMultipleRootNodes(result.rootNodes)
+                for ((rootNode, teSeries) in topEventResults) {
+                    println("Event series for root node $rootNode: $teSeries")
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
