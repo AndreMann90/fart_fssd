@@ -41,7 +41,7 @@ object Output {
 
     private fun plot() {
         println("plotting stuff")
-        val pb = ProcessBuilder("python3.4", "src/de/fssd/output/TimeseriesPlotter.py", "data.csv")
+        val pb = ProcessBuilder("python", "src/de/fssd/output/TimeseriesPlotter.py", "data.csv")
         // val pb = ProcessBuilder("python3.4", "-c", "import os; print(os.getcwd())")
         pb.redirectErrorStream(true)
         val p = pb.start()
