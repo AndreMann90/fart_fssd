@@ -20,6 +20,9 @@ object Output {
     }
 
     private fun toCsv(sampleCount: Int, sampleTime: Float, mcVariables: List<McVariable>, topEvents: Collection<List<Float>>) {
+        val vars = mcVariables.map({ v -> v.name})
+        println("vars: $vars")
+
         BufferedWriter(FileWriter("data.csv")).use { br ->
             val writer = CsvListWriter(br, CsvPreference.STANDARD_PREFERENCE)
             val header = mutableListOf("time")

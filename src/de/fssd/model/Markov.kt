@@ -92,7 +92,17 @@ class Markov : TimeSeries, StateDependencies {
     private val chains = ArrayList<Subchain>()
 
     val variables: List<McVariable>
-        get() = chains.asSequence().map { sc -> sc.varmap.values }.fold(mutableListOf(), {res, cur -> res.addAll(cur); return res })
+        get() {
+            /* TODO: could be made prettier */
+            val r = ArrayList<McVariable>()
+            for (c in chains) {
+                for (v in c.varmap.values) {
+                    r.add(v)
+                }
+            }
+            return r
+        }
+
 
     class MarkovException : RuntimeException { constructor(message: String): super(message) { } }
 
@@ -149,6 +159,7 @@ class Markov : TimeSeries, StateDependencies {
     private fun uniformization() {
         val timedelta = measureTimeMillis {
             for (c in chains) {
+                System.err.println("Chain thingy")
                 c.uniform(samplePointsCount)
             }
         }
@@ -176,7 +187,11 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     private fun getVarIDs(): Collection<Int> {
-        return chains.fold(ArrayList<Int>(), {S, C -> S.union(C.varmap.keys); S})
+        var r: Set<Int> = mutableSetOf()
+        for (chain in chains) {
+            r = r.union(chain.varmap.keys)
+        }
+        return r
     }
 
     override fun areVariableDependent(varID1: Int, varID2: Int): Boolean {
@@ -186,7 +201,9 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
+        println("Vars: ${getVarIDs()}")
         for (varID in getVarIDs()) {
+            println("Bla")
             val thisSeries = getProbabilitySeries(varID.toInt());
             val otherSeries = timeSeries.getProbabilitySeries(varID.toInt());
             val equal = thisSeries?.equals(otherSeries) ?: (otherSeries == null)
