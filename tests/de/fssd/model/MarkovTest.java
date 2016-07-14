@@ -19,8 +19,6 @@ public class MarkovTest {
         BDDBuildResult r = new BDDBuilder().build(p.parse(new File("testcases/HFTTestCase.json")));
 
         Pair<BDDNode, TimeSeriesFromCSV> e = TestFactory.getHFTTestCase();
-        System.out.println("Expected: " + e.getValue());
-        System.out.println("Actual: " + r.getMarkov());
         assertTrue("Markovs are not equal", r.getMarkov().equalsToTimeSeries(e.getValue()));
     }
 }
