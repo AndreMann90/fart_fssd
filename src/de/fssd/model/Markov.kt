@@ -53,7 +53,6 @@ class Markov : TimeSeries, StateDependencies {
                 maxRateGamma = Math.max(maxRateGamma, qii)
                 assert(0 <= qii && qii < Double.POSITIVE_INFINITY)
             }
-            System.err.println("Subchain γ: " + maxRateGamma)
 
             val P = createRealIdentityMatrix(size).add(Q.scalarMultiply(1 / maxRateGamma))
 
@@ -158,7 +157,6 @@ class Markov : TimeSeries, StateDependencies {
     private fun uniformization() {
         val timedelta = measureTimeMillis {
             for (c in chains) {
-                System.err.println("Chain thingy")
                 c.uniform(samplePointsCount, sampleTime)
             }
         }
@@ -194,15 +192,15 @@ class Markov : TimeSeries, StateDependencies {
     }
 
     override fun areVariableDependent(varID1: Int, varID2: Int): Boolean {
-        return stateToChain.filter({ E ->
-            val k = E.value.varmap.keys
-            k.contains(varID1) || k.contains(varID2)}).size == 1
+        for (c in chains) {
+            if ((varID1 in c.varmap.keys) && (varID2 in c.varmap.keys))
+                return true
+        }
+        return false
     }
 
     fun equalsToTimeSeries(timeSeries: TimeSeries): Boolean {
-        println("Vars: ${getVarIDs()}")
         for (varID in getVarIDs()) {
-            println("Bla")
             val thisSeries = getProbabilitySeries(varID.toInt())
             val otherSeries = timeSeries.getProbabilitySeries(varID.toInt())
             val inequalEl = thisSeries?.asSequence()?.zip(otherSeries!!.asSequence()) {a, b -> Math.abs(a - b)}?.find { el -> el >= 0.0001 }
