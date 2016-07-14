@@ -21,10 +21,14 @@ class Evaluation {
 
     fun evaluateMultipleRootNodes(rootNodes: List<BDDNode>): Map<BDDNode, List<Float>> {
         val results : MutableMap<BDDNode, List<Float>> = mutableMapOf()
-        computedTable = HashMap<BDDNode, List<Float>>()
-        for (rootNode in rootNodes) {
-            results.put(rootNode, evaluateWithOneRootNode(rootNode))
+        val time = measureTimeMillis {
+            computedTable = HashMap<BDDNode, List<Float>>()
+            for (rootNode in rootNodes) {
+                println(rootNode.treeString)
+                results.put(rootNode, evaluateWithOneRootNode(rootNode))
+            }
         }
+        println("Evaluation took: $time ms")
         return results
     }
 
