@@ -24,11 +24,10 @@ class Evaluation {
         val time = measureTimeMillis {
             computedTable = HashMap<BDDNode, List<Float>>()
             for (rootNode in rootNodes) {
-                println(rootNode.treeString)
                 results.put(rootNode, evaluateWithOneRootNode(rootNode))
             }
         }
-        println("Evaluation took: $time ms")
+        System.err.println("Evaluation took $time milliseconds")
         return results
     }
 

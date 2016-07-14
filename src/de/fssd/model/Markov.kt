@@ -205,7 +205,7 @@ class Markov : TimeSeries, StateDependencies {
             val otherSeries = timeSeries.getProbabilitySeries(varID.toInt())
             val inequalEl = thisSeries?.asSequence()?.zip(otherSeries!!.asSequence()) {a, b -> Math.abs(a - b)}?.find { el -> el >= 0.0001 }
             if(inequalEl != null) {
-                print("inequal Element with diff: $inequalEl")
+                System.err.println("inequal Element with diff: $inequalEl")
                 return false
             }
         }

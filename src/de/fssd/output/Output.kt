@@ -21,11 +21,7 @@ object Output {
     }
 
     private fun toCsv(sampleCount: Int, sampleTime: Float, mcVariables: List<McVariable>, topEvents: Collection<List<Float>>): File {
-        val vars = mcVariables.map({ v -> v.name})
-        println("vars: $vars")
-
         val tmpf = File.createTempFile("htfa", ".csv")
-
         tmpf.bufferedWriter().use { bw ->
             val writer = CsvListWriter(bw, CsvPreference.STANDARD_PREFERENCE)
             val header = mutableListOf("time")
@@ -66,6 +62,11 @@ object Output {
         p.waitFor()
 
         tmpf.delete()
-        csv.delete() /* TODO: keep this? */
+
+        csv.bufferedReader().use { r ->
+            for (l in r.readLines())
+                System.out.println(l)
+        }
+        csv.delete()
     }
 }
