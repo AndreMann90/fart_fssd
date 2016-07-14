@@ -10,7 +10,9 @@ import jdd.bdd.BDD;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -21,9 +23,9 @@ public class EvaluationTest {
 
     private void testEvaluationMethods(String testCase, Evaluation evaluation, BDDNode rootNode, List<Float> expected) {
         long start = System.currentTimeMillis();
-        List<Float> evaluated = evaluation.evaluateWithRootNodeAndComputedTable(rootNode);
+        Map<BDDNode, List<Float>> evaluated = evaluation.evaluateMultipleRootNodes(Collections.singletonList(rootNode));
         long end = System.currentTimeMillis();
-        assertEquals(expected, evaluated);
+        assertEquals(expected, evaluated.get(rootNode));
         System.out.println(testCase + ": evaluateWithRootNodeAndComputedTable successful within " + (end-start) + "ms");
     }
 
@@ -34,7 +36,6 @@ public class EvaluationTest {
         TimeSeriesFromCSV timeSeries = htf.getValue();
         BDDNode rootNode = htf.getKey();
 
-        System.out.println(rootNode.getTreeString());
         Evaluation evaluation = new Evaluation(timeSeries);
 
         testEvaluationMethods("HTF", evaluation, rootNode, timeSeries.getRemainingResultPerID("g16"));
