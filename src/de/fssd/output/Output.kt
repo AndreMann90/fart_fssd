@@ -4,6 +4,7 @@ import de.fssd.model.McVariable
 import org.supercsv.io.CsvListWriter
 import org.supercsv.prefs.CsvPreference
 import java.io.BufferedWriter
+import java.io.File
 import java.io.FileWriter
 
 object Output {
@@ -15,16 +16,18 @@ object Output {
         for (te in topEvents) {
             assert(te.size == sampleCount)
         }
-        toCsv(sampleCount, sampleTime, mcVariables, topEvents)
-        plot()
+        val csv = toCsv(sampleCount, sampleTime, mcVariables, topEvents)
+        plot(csv)
     }
 
-    private fun toCsv(sampleCount: Int, sampleTime: Float, mcVariables: List<McVariable>, topEvents: Collection<List<Float>>) {
+    private fun toCsv(sampleCount: Int, sampleTime: Float, mcVariables: List<McVariable>, topEvents: Collection<List<Float>>): File {
         val vars = mcVariables.map({ v -> v.name})
         println("vars: $vars")
 
-        BufferedWriter(FileWriter("data.csv")).use { br ->
-            val writer = CsvListWriter(br, CsvPreference.STANDARD_PREFERENCE)
+        val tmpf = File.createTempFile("htfa", ".csv")
+
+        tmpf.bufferedWriter().use { bw ->
+            val writer = CsvListWriter(bw, CsvPreference.STANDARD_PREFERENCE)
             val header = mutableListOf("time")
             header.addAll(mcVariables.map { v -> v.name })
             header.addAll((0..topEvents.size - 1).map { i -> "topEvent$i" })
@@ -37,19 +40,32 @@ object Output {
             }
             writer.flush()
         }
+
+        return tmpf
     }
 
-    private fun plot() {
-        println("plotting stuff")
-        val pb = ProcessBuilder("python", "src/de/fssd/output/TimeseriesPlotter.py", "data.csv")
-        // val pb = ProcessBuilder("python3.4", "-c", "import os; print(os.getcwd())")
-        pb.redirectErrorStream(true)
-        val p = pb.start()
-        val r = p.inputStream.bufferedReader()
-        for (l in r.lines()) {
-            println("Child said: $l")
+    private fun plot(csv: File) {
+        val s = javaClass.getClassLoader().getResourceAsStream("TimeseriesPlotter.py")
+        val tmpf = File.createTempFile("htfa", ".py")
+        tmpf.bufferedWriter().use { w ->
+            for (l in s.bufferedReader().lines()) {
+                w.append(l)
+                w.newLine()
+            }
+            w.flush()
         }
-        println("Waiting for plotter to exit")
+
+        val tmphtml = File.createTempFile("htfa", ".html")
+        val pb = ProcessBuilder("python", tmpf.absolutePath, csv.absolutePath, tmphtml.absolutePath)
+
+        val p = pb.start()
+        p.errorStream.bufferedReader().use { r ->
+            for (l in r.readLines())
+                System.err.println(l)
+        }
         p.waitFor()
+
+        tmpf.delete()
+        csv.delete() /* TODO: keep this? */
     }
 }

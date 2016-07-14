@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="fart_fssd:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/fart_fssd_jar</output-path>
+    <root id="archive" name="fart_fssd.jar">
+      <element id="module-output" name="fart_fssd" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jdd_104.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/gson-2.7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/kotlin-runtime.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/kotlin-reflect.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/super-csv-2.4.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jgrapht-core-0.9.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-math3-3.6.1.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
