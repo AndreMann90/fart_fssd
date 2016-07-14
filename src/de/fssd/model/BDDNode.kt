@@ -72,11 +72,14 @@ class BDDNode (bdd: BDD, timeSeries: TimeSeries, stateDependencies: StateDepende
         if (this === other) return true
         if (other !is BDDNode) return false
 
-        return varID == other.varID && (isOne && other.isOne
-                ||
-                isZero && other.isZero
-                ||
-                this.lowChild == other.lowChild && this.highChild == other.highChild)
+        return varID == other.varID
+                && (
+                    (isOne && other.isOne)
+                    ||
+                    (isZero && other.isZero)
+                    ||
+                    (this.lowChild == other.lowChild && this.highChild == other.highChild)
+                )
     }
 
     /**
