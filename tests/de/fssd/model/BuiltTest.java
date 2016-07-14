@@ -16,17 +16,14 @@ public class BuiltTest {
 
     @org.junit.Test
     public void parse() throws Exception {
-        Parser parser = new Parser();
-
-        FaultTree faultTree = parser.parse(new File("testcases/HFTTestCase.json"));
+        FaultTree faultTree = Parser.INSTANCE.parse(new File("testcases/HFTTestCase.json"));
 
         System.out.println("Done parsing :)");
     }
 
     @org.junit.Test
     public void testBDDBuilder() throws Exception {
-        Parser p = new Parser();
-        FaultTree t = p.parse(new File("testcases/HFTTestCase.json"));
+        FaultTree t = Parser.INSTANCE.parse(new File("testcases/HFTTestCase.json"));
 
         BDDBuilder b = new BDDBuilder();
 

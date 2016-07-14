@@ -6,7 +6,16 @@ import java.util.*
 import kotlin.system.measureTimeMillis
 
 /**
- * Created by Andre on 30.06.2016.
+ * Class concerned with the evaluation of top events.
+ *
+ * The [TimeSeries] is injected, which can be the [Markov] as well as the [TimeSeriesFromCSV]. So it is decoupled from
+ * the [Markov].
+ *
+ * Evaluation uses computed table. Originally, the approach was to lazily evaluate to the root node with [Sequence].
+ * With this approach, no intermediate stored lists would have been needed. However, a [Sequence] can only consumed
+ * ones. That is why we could not use a computed table. So, we collect in each node the [Sequence] to a list in order
+ * to store it in the computed table. Effectively, the elegance of the approach is lost. A solution could be a self-made
+ * sequence-like API with caching of last element.
  */
 class Evaluation {
     private val ones = { 1f }
@@ -61,9 +70,9 @@ class Evaluation {
         } else if (computedTable.containsKey(node)) {
             return computedTable[node]!!.asSequence()
         } else {
-            val result = formulaFromChildes(node).toList()
+            val result = formulaFromChildes(node).toList() // elegance of approach (construct one lazy evaluated sequence) lost
             computedTable.put(node, result)
-            return result.asSequence() // Eleganz vom Ansatz weg...
+            return result.asSequence()
         }
     }
 
@@ -112,7 +121,7 @@ class Evaluation {
 }
 
 // adapted from std lib:
-internal class MergingSequence3<T1, T2, T3, V>
+internal class MergingSequence3<T1, T2, T3, out V>
 constructor(private val sequence1: Sequence<T1>,
             private val sequence2: Sequence<T2>,
             private val sequence3: Sequence<T3>,
@@ -131,7 +140,7 @@ constructor(private val sequence1: Sequence<T1>,
     }
 }
 
-internal class MergingSequence4<T1, T2, T3, T4, V>
+internal class MergingSequence4<T1, T2, T3, T4, out V>
 constructor(private val sequence1: Sequence<T1>,
             private val sequence2: Sequence<T2>,
             private val sequence3: Sequence<T3>,

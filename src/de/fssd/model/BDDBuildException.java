@@ -1,10 +1,10 @@
 package de.fssd.model;
 
 /**
- * Created by gbe on 6/23/16.
+ * Exception for {@link BDDBuilder}
  */
-public class BDDBuildException extends RuntimeException {
-    public BDDBuildException(String s) {
+class BDDBuildException extends RuntimeException {
+    BDDBuildException(String s) {
         super(s);
     }
 }

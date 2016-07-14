@@ -16,8 +16,7 @@ public class IntegrationTest {
 
     @org.junit.Test
     public void integrationTest() throws Exception {
-        Parser parser = new Parser();
-        FaultTree faultTree = parser.parse(new File("testcases/HFTTestCase.json"));
+        FaultTree faultTree = Parser.INSTANCE.parse(new File("testcases/HFTTestCase.json"));
         BDDBuildResult result = new BDDBuilder().build(faultTree);
         Evaluation evaluation = new Evaluation(result.getMarkov());
 
@@ -27,7 +26,6 @@ public class IntegrationTest {
 
         List<Float> expectedTopEventSeries = new TimeSeriesFromCSV(new File("testcases/TestCaseForProgrammingProject.csv"))
                 .getRemainingResultPerID("g16");
-
         assertEquals(expectedTopEventSeries, topEventSeries);
     }
 }

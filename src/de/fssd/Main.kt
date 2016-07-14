@@ -14,12 +14,11 @@ object Main {
             println("One Argument with the file location of the HFT expected")
         } else {
             try {
-                val parser = Parser()
-                val faultTree = parser.parse(if (args[0] == "-") null else File(args[0]))
+                val faultTree = Parser.parse(if (args[0] == "-") null else File(args[0]))
                 val result = BDDBuilder().build(faultTree)
                 val evaluation = Evaluation(result.markov)
                 val topEventResults = evaluation.evaluateMultipleRootNodes(result.rootNodes)
-                Output.writeOutput(faultTree.sampleCount, faultTree.missionTime / faultTree.sampleCount, result.markov.variables, topEventResults.values)
+                Output.writeOutput(faultTree.sampleCount, faultTree.missionTime / (faultTree.sampleCount - 1), result.markov.variables, topEventResults.values)
             } catch (e: IOException) {
                 e.printStackTrace()
             }

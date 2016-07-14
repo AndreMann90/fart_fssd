@@ -3,11 +3,11 @@ package de.fssd.model
 import jdd.bdd.BDD
 
 /**
- * Use to wrap a [BDD] for a more programmer friendly NAVIGATION through the bdd AFTER having build it.
+ * Use to wrap a [BDD] for a more programmer friendly NAVIGATION through the bdd **AFTER** having build it.
  *
  *
- * IMPORTANT: DO NOT CHANGE the bdd since changes will not be detected.
- * THE ONLY USE CASE for this class is a nice navigation through the <em>final</em> bdd.
+ * *IMPORTANT:* DO NOT CHANGE the bdd since changes will not be detected.
+ * THE ONLY USE CASE for this class is a nice navigation through the **final** bdd.
  *
  * @param bdd the bdd
  * @param stateDependencies the stateDependencies

@@ -3,10 +3,13 @@ package de.fssd.output
 import de.fssd.model.McVariable
 import org.supercsv.io.CsvListWriter
 import org.supercsv.prefs.CsvPreference
-import java.io.BufferedWriter
 import java.io.File
-import java.io.FileWriter
 
+/**
+ * Concerned with writing the Output.
+ *
+ * Writes a temporary CSV file and then executes Python. Requires Python 3 to be installed.
+ */
 object Output {
 
     fun writeOutput(sampleCount: Int, sampleTime: Float, mcVariables: List<McVariable>, topEvents: Collection<List<Float>>) {
@@ -28,7 +31,7 @@ object Output {
             header.addAll(mcVariables.map { v -> v.name })
             header.addAll((0..topEvents.size - 1).map { i -> "topEvent$i" })
             writer.writeHeader(*header.toTypedArray())
-            for(time in 0..sampleCount) {
+            for(time in 0..sampleCount-1) {
                 val row = mutableListOf(time * sampleTime)
                 row.addAll(mcVariables.map { v -> v.timeSeries[time] })
                 row.addAll(topEvents.map { te -> te[time] })

@@ -14,9 +14,7 @@ import static junit.framework.TestCase.assertTrue;
 public class MarkovTest {
     @org.junit.Test
     public void testMarkov() throws IOException {
-        Parser p = new Parser();
-
-        BDDBuildResult r = new BDDBuilder().build(p.parse(new File("testcases/HFTTestCase.json")));
+        BDDBuildResult r = new BDDBuilder().build(Parser.INSTANCE.parse(new File("testcases/HFTTestCase.json")));
 
         Pair<BDDNode, TimeSeriesFromCSV> e = TestFactory.getHFTTestCase();
         assertTrue("Markovs are not equal", r.getMarkov().equalsToTimeSeries(e.getValue()));

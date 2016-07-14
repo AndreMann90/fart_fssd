@@ -7,11 +7,10 @@ import java.io.File
 
 class MCComponentFinderTest : TestCase() {
     @Test fun testComponentFinder() {
-        val p = Parser()
-        val t = p.parse(File("testcases/HFTTestCase.json"))
+        val t = Parser.parse(File("testcases/HFTTestCase.json"))
 
-        val f = MCComponentFinder(t)
+        val components = MCComponentFinder.compute(t)
 
-        assertEquals("Unexpected number of components", 2, f.components.size)
+        assertEquals("Unexpected number of components", 2, components.size)
     }
 }

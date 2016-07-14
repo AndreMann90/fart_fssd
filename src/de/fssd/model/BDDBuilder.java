@@ -9,6 +9,10 @@ import jdd.bdd.BDD;
 
 import java.util.*;
 
+/**
+ * Builds the fault tree consisting of the BDD with top events as list of {@link BDDNode} and the Markov Chain as
+ * {@link Markov}. The input is the parsed {@link FaultTree} that is pure data class
+ */
 public class BDDBuilder {
 
     private Integer multiOp(BDD bdd, Vector<Integer> inputs, String op) {
@@ -70,13 +74,14 @@ public class BDDBuilder {
         /* Return bdd, top node, markov states */
         updateDependencies(faultTree);
 
-        BDD bdd = new BDD(1000);
+        final BDD bdd = new BDD(1000);
 
-        MCComponentFinder f = new MCComponentFinder(faultTree);
-        Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
-        Map<Integer, MCState> varIDToStateMap = new HashMap<>();
+        final List<Set<MCState>> components = MCComponentFinder.INSTANCE.compute(faultTree);
+        final Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
+        final Map<Integer, MCState> varIDToStateMap = new HashMap<>();
 
-        for (Set<MCState> set: f.getComponents()) {
+        long startTime = System.currentTimeMillis(); // start of building bdd
+        for (Set<MCState> set: components) {
             for (MCState s: set) {
                 int var = bdd.ref(bdd.createVar());
                 stateToNodeIDMap.put(s, var);
@@ -117,7 +122,10 @@ public class BDDBuilder {
             }
         }
 
-        Markov markov = new Markov(faultTree, f, varIDToStateMap);
+        long stopTime = System.currentTimeMillis();
+        System.err.println("Building the BDD took " + (stopTime - startTime) + " milliseconds");
+
+        Markov markov = new Markov(faultTree, components, varIDToStateMap);
         ArrayList<BDDNode> topNodes = new ArrayList<>();
         for (Integer ni: topNodeIds) {
             topNodes.add(new BDDNode(bdd, markov, markov, ni));
