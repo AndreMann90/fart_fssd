@@ -24,7 +24,7 @@ object Output {
             val writer = CsvListWriter(br, CsvPreference.STANDARD_PREFERENCE)
             val header = mutableListOf("time")
             header.addAll(mcVariables.map { v -> v.name })
-            header.addAll((0..topEvents.size).map { i -> "topEvent$i" })
+            header.addAll((0..topEvents.size - 1).map { i -> "topEvent$i" })
             writer.writeHeader(*header.toTypedArray())
             for(time in 0..sampleCount) {
                 val row = mutableListOf(time * sampleTime)
@@ -32,10 +32,21 @@ object Output {
                 row.addAll(topEvents.map { te -> te[time] })
                 writer.write(row)
             }
+            writer.flush()
         }
     }
 
     private fun plot() {
-        Runtime.getRuntime().exec(arrayOf("python", "TimeseriesPlotter.py"));  // TODO pass file location
+        println("plotting stuff")
+        val pb = ProcessBuilder("python3.4", "src/de/fssd/output/TimeseriesPlotter.py", "data.csv")
+        // val pb = ProcessBuilder("python3.4", "-c", "import os; print(os.getcwd())")
+        pb.redirectErrorStream(true)
+        val p = pb.start()
+        val r = p.inputStream.bufferedReader()
+        for (l in r.lines()) {
+            println("Child said: $l")
+        }
+        println("Waiting for plotter to exit")
+        p.waitFor()
     }
 }
