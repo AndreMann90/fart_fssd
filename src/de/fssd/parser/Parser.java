@@ -13,7 +13,11 @@ public class Parser {
     private Gson gson = new GsonBuilder().create();
 
     public FaultTree parse(File fromFile) throws IOException {
-        InputStreamReader reader = new InputStreamReader(new BufferedInputStream(new FileInputStream(fromFile)));
+        InputStreamReader reader;
+        if (fromFile == null)
+            reader = new InputStreamReader(System.in);
+        else
+            reader = new InputStreamReader(new BufferedInputStream(new FileInputStream(fromFile)));
         return gson.fromJson(reader, FaultTree.class);
     }
 }
