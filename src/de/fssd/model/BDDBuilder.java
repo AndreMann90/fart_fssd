@@ -18,19 +18,18 @@ public class BDDBuilder {
             Integer c;
             switch (op) {
                 case ">=1":
-                    c = bdd.ref(bdd.or(prev, inputs.get(idx)));
+                    c = bdd.or(prev, inputs.get(idx));
                     break;
                 case "&":
-                    c = bdd.ref(bdd.and(prev, inputs.get(idx)));
+                    c = bdd.and(prev, inputs.get(idx));
                     break;
                 default:
                     throw new ParseException("The operation " + op + " is not supported");
             }
-            bdd.deref(prev);
             prev = c;
         }
 
-        return prev;
+        return bdd.ref(prev);
     }
 
     private Map<String, FaultTreeNode> computeMap(List<FaultTreeNode> nodes) {
