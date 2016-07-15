@@ -8,7 +8,6 @@ import javafx.util.Pair;
 import java.io.File;
 import java.io.IOException;
 
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 public class MarkovTest {

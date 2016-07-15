@@ -16,9 +16,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Andre on 21.06.2016.
- */
+
 public class EvaluationTest {
 
     private void testEvaluationMethods(String testCase, Evaluation evaluation, BDDNode rootNode, List<Float> expected) {

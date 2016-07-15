@@ -33,8 +33,8 @@ object MCComponentFinder {
         }
 
         for (s in t.chain) {
-            for (tr in s.transitions) {
-                g.addEdge(s, m[tr.state])
+            for ((p, state) in s.transitions) {
+                g.addEdge(s, m[state])
             }
         }
 

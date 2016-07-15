@@ -7,7 +7,6 @@ import org.supercsv.prefs.CsvPreference;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Reads from Csv File the timeseries.
@@ -18,12 +17,12 @@ import java.util.stream.Stream;
  */
 public class TimeSeriesFromCSV implements TimeSeries {
 
-    private Map<Integer, List<Float>> varIdToSeriesMap;
-    private Map<String, List<Float>> gateIdToSeriesMap;
+    private final Map<Integer, List<Float>> varIdToSeriesMap;
+    private final Map<String, List<Float>> gateIdToSeriesMap;
 
     private int numberSamplingPoints = 0;
 
-    public TimeSeriesFromCSV(File file, List<Integer> varIdsOrdered) throws IOException {
+    TimeSeriesFromCSV(File file, List<Integer> varIdsOrdered) throws IOException {
         varIdToSeriesMap = new HashMap<>();
         gateIdToSeriesMap = new HashMap<>();
         parseCSV(file, varIdsOrdered);

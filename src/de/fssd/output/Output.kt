@@ -4,6 +4,7 @@ import de.fssd.model.McVariable
 import org.supercsv.io.CsvListWriter
 import org.supercsv.prefs.CsvPreference
 import java.io.File
+import kotlin.system.measureTimeMillis
 
 /**
  * Concerned with writing the Output.
@@ -19,8 +20,11 @@ object Output {
         for (te in topEvents) {
             assert(te.size == sampleCount)
         }
-        val csv = toCsv(sampleCount, sampleTime, mcVariables, topEvents)
-        plot(csv)
+        val time = measureTimeMillis {
+            val csv = toCsv(sampleCount, sampleTime, mcVariables, topEvents)
+            plot(csv)
+        }
+        System.err.println("Writing output took $time milliseconds")
     }
 
     private fun toCsv(sampleCount: Int, sampleTime: Float, mcVariables: List<McVariable>, topEvents: Collection<List<Float>>): File {
@@ -44,7 +48,7 @@ object Output {
     }
 
     private fun plot(csv: File) {
-        val s = javaClass.getClassLoader().getResourceAsStream("TimeseriesPlotter.py")
+        val s = javaClass.classLoader.getResourceAsStream("TimeseriesPlotter.py")
         val tmpf = File.createTempFile("htfa", ".py")
         tmpf.bufferedWriter().use { w ->
             for (l in s.bufferedReader().lines()) {

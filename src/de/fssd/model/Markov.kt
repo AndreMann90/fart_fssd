@@ -34,7 +34,7 @@ class Markov : TimeSeries, StateDependencies {
 
     constructor (tree: FaultTree, components: List<Set<MCState>>, varIDToStateMap: Map<Int, MCState>) {
         samplePointsCount = tree.sampleCount
-        sampleTime = tree.missionTime / (samplePointsCount - 1)
+        sampleTime = tree.sampleTime
 
         // manage mapping of varID that was defined by the bdd library and init the initial probability
         val nameIdToVarIdMap = HashMap<String, Int>() // maps the name of sate in file to varId of state given by BDD
@@ -99,7 +99,7 @@ class Markov : TimeSeries, StateDependencies {
         val vm = HashMap<Int, McVariable>()
         for (c in chains) {
             for (k in c.varmap.keys) {
-                vm[k] = c.varmap[k] ?: throw MarkovException("Unkown variable $k")
+                vm[k] = c.varmap[k] ?: throw MarkovException("Unknown variable $k")
             }
         }
 

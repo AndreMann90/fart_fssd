@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by Andre on 21.06.2016.
+ * Factory that creates test instances
  */
 public class TestFactory {
 

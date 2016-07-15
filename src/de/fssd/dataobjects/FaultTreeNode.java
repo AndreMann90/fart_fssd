@@ -10,7 +10,7 @@ public class FaultTreeNode {
     private @NotNull final String id;
     private @NotNull final String op;
 
-    private @Nullable List<String> out;
+    private @Nullable final List<String> out;
 
     /* These are initialized lazily */
     private @Nullable List<FaultTreeNode> outputs = null;

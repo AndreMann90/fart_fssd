@@ -9,6 +9,11 @@ import java.io.IOException
 
 object Main {
 
+    /**
+     * Run the HFT Analysis.
+     *
+     * @param args One Argument with the file location of the HFT expected
+     */
     @JvmStatic fun main(args: Array<String>) {
         if (args.size != 1) {
             println("One Argument with the file location of the HFT expected")
@@ -18,7 +23,7 @@ object Main {
                 val result = BDDBuilder().build(faultTree)
                 val evaluation = Evaluation(result.markov)
                 val topEventResults = evaluation.evaluateMultipleRootNodes(result.rootNodes)
-                Output.writeOutput(faultTree.sampleCount, faultTree.missionTime / (faultTree.sampleCount - 1), result.markov.variables, topEventResults.values)
+                Output.writeOutput(faultTree.sampleCount, faultTree.sampleTime, result.markov.variables, topEventResults.values)
             } catch (e: IOException) {
                 e.printStackTrace()
             }

@@ -1,7 +1,7 @@
 package de.fssd.parser;
 
 /**
- * Created by Andre on 16.06.2016.
+ * Used in {@link de.fssd.model.BDDBuilder}
  */
 public class ParseException extends RuntimeException {
 

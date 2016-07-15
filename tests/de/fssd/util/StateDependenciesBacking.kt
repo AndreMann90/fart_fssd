@@ -7,7 +7,7 @@ import de.fssd.model.StateDependencies
  */
 class StateDependenciesBacking : StateDependencies {
 
-    private var dependencies : List<Collection<Int>>;
+    private var dependencies : List<Collection<Int>>
 
     constructor (dependencies: List<Collection<Int>>) {
         this.dependencies = dependencies

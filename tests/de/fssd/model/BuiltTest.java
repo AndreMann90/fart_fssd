@@ -10,16 +10,8 @@ import de.fssd.util.TestFactory;
 import java.io.File;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 
 public class BuiltTest {
-
-    @org.junit.Test
-    public void parse() throws Exception {
-        FaultTree faultTree = Parser.INSTANCE.parse(new File("testcases/HFTTestCase.json"));
-
-        System.out.println("Done parsing :)");
-    }
 
     @org.junit.Test
     public void testBDDBuilder() throws Exception {
