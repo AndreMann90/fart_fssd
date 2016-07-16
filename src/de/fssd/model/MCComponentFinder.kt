@@ -34,7 +34,12 @@ object MCComponentFinder {
 
         for (s in t.chain) {
             for ((p, state) in s.transitions) {
-                g.addEdge(s, m[state])
+                val edgeTo = m[state]
+                if(edgeTo == null) {
+                    throw BDDBuildException("${s.id} has edge to non-existent state $state")
+                } else {
+                    g.addEdge(s, m[state])
+                }
             }
         }
 

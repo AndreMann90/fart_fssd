@@ -8,6 +8,7 @@ import de.fssd.parser.ParseException;
 import jdd.bdd.BDD;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Builds the fault tree consisting of the BDD with top events as list of {@link BDDNode} and the Markov Chain as
@@ -65,6 +66,21 @@ public class BDDBuilder {
         }
     }
 
+    private void checkComponents(List<Set<MCState>> components) {
+        for (Set<MCState> chain: components) {
+            float p0Sum = 0f;
+            for (MCState state : chain) {
+                p0Sum += state.getP0();
+            }
+            if(p0Sum != 1) {
+                throw new BDDBuildException("The initial probabilities p0 of chain with states "
+                        + chain.stream().map(MCState::getId).collect(Collectors.toList())
+                        + " does not sum up to 1");
+            }
+        }
+    }
+
+
     /**
      * Builds the BDD from the fault tree and returns the root node and the Markov
      * @param faultTree the fault tree
@@ -77,6 +93,7 @@ public class BDDBuilder {
         final BDD bdd = new BDD(1000);
 
         final List<Set<MCState>> components = MCComponentFinder.INSTANCE.compute(faultTree);
+        checkComponents(components);
         final Map<MCState, Integer> stateToNodeIDMap = new HashMap<>();
         final Map<Integer, MCState> varIDToStateMap = new HashMap<>();
 

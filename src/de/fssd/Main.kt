@@ -17,6 +17,8 @@ object Main {
     @JvmStatic fun main(args: Array<String>) {
         if (args.size != 1) {
             println("One Argument with the file location of the HFT expected")
+        } else if (!File(args[0]).exists()) {
+            println("The file $args[0] does not exist")
         } else {
             try {
                 val faultTree = Parser.parse(if (args[0] == "-") null else File(args[0]))
