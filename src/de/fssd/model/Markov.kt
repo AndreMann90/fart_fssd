@@ -44,7 +44,7 @@ class Markov : TimeSeries, StateDependencies {
             nameIdToVarIdMap.put(mcState.id, varID)
         }
 
-        for (s in components) {
+        for ((i, s) in components.withIndex()) {
             val chain = Subchain(s.size)
             chains.add(chain)
 
@@ -52,7 +52,7 @@ class Markov : TimeSeries, StateDependencies {
             for (mcs in s) {
                 stateToChain[mcs] = chain
                 val fromId = nameIdToVarIdMap[mcs.id] ?: throw MarkovException("Invalid MC State ID ${mcs.id}")
-                chain.varmap[fromId] = McVariable(orderInQ, mcs.id)
+                chain.varmap[fromId] = McVariable(orderInQ, "chain$i - ${mcs.id}")
                 orderInQ++
             }
 
