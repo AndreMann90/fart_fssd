@@ -20,7 +20,7 @@ def plot(fname="data.csv", output="timeseries.html"):
                 series[h].append(row[i+1])
 
         data = []
-        for key in series.keys():
+        for key in sorted(series.keys()):
             trace = go.Scatter(
                 x=time,
                 y=series[key],
