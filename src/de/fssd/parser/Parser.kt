@@ -21,6 +21,15 @@ object Parser {
             else
                 reader = InputStreamReader(BufferedInputStream(FileInputStream(fromFile)))
             faultTree = gson.fromJson(reader, FaultTree::class.java)
+            if (faultTree!!.missionTime <= 0f) {
+                throw ParseException("The missionTime must be greater 0")
+            } else if(faultTree!!.sampleCount <= 0) {
+                throw ParseException("The sampleCount must be greater 0")
+            } else if(faultTree!!.nodes.isEmpty()) {
+                throw ParseException("No nodes found")
+            } else if(faultTree!!.chain.isEmpty()) {
+                throw ParseException("No states found")
+            }
         }
         System.err.println("Parsing the HTF took $time milliseconds")
         return faultTree!!
